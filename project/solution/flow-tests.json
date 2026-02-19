@@ -1,0 +1,25 @@
+{
+  "flowInputNode": {
+    "nodeName": "FlowInputNode"
+  },
+  "tests": [
+    {
+      "id": "t1_bug_report_branch",
+      "category": "BUG_REPORT",
+      "prompt": "There is an issue with your website. It loads too slowly. Up to 20 seconds long. I am using Safari",
+      "expected": "Sorry about the crash. Please share steps to reproduce, and any error message."
+    },
+    {
+      "id": "t2_product_question_branch",
+      "category": "PRODUCT_QUESTION",
+      "prompt": "What is a Well-Architected Framework?",
+      "expected": "Explains what that a Well-Architected Framework is a guide by AWS describing best "
+    },
+    {
+      "id": "t3_default_other_branch",
+      "category": "OTHER",
+      "prompt": "Can you change the billing address on my last invoice and resend it to accounting?",
+      "expected": "Please call +12345678 so our support team can help with this request."
+    }
+  ]
+}
