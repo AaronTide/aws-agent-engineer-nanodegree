@@ -2,9 +2,9 @@
 
 In this project you will build a customer support chatbot using Amazon Bedrock Flows. The chatbot will need to handle one of the following types of messages:
 
-- **Bug reports** - Collected by an agent and stored in a DynamoDB table via a Lambda tool.
-- **Product questions** - Answered using a Knowledge Base with your product documentation.
-- **Other requests** - Politely redirected to a human support phone line.
+- **Bug reports** - if a customer reports a bug the application need to collect additional information and create a ticket for the reported bug.
+- **Product questions** - the application should respond to a question using its Knowledge Base.
+- **Other requests** - politely redirected to a human support phone line.
 
 ## Getting Started
 
@@ -13,18 +13,18 @@ In this project you will build a customer support chatbot using Amazon Bedrock F
 - An AWS account with Amazon Bedrock access enabled.
 - AWS CLI configured with appropriate credentials.
 - Python 3.9+ with `boto3` installed.
-- Access to an Amazon Bedrock model (the solution uses Amazon Nova Premier, but you can use any supported model).
+- Access to an Amazon Bedrock model (the solution uses Amazon Nova models, but you can use any supported model).
 
 ### Project Files
 
 | File | Description |
 |------|-------------|
-| `create-bug-report.py` | Lambda function that stores bug reports in DynamoDB. Deploy this as an Agent tool. |
 | `docs/tool-setup.md` | Step-by-step guide for creating the DynamoDB table, Lambda function, and IAM permissions. |
-| `generate-eval-dataset.py` | Script that runs your flow against a test suite and produces a JSONL file for Bedrock Evaluations. |
-| `flow-tests-template.json` | Template for your test suite. Copy this and fill in your own test cases. |
 | `docs/testing.md` | Step-by-step guide for automated testing, creating a flow alias, and running Bedrock Evaluations. |
 | `solution/` | Reference solution with the complete flow definition, test prompts, and a diagram. |
+| `create-bug-report.py` | Lambda function that stores bug reports in DynamoDB. Deploy this as an Agent tool. |
+| `generate-eval-dataset.py` | Script that runs your flow against a test suite and produces a JSONL file for Bedrock Evaluations. |
+| `flow-tests-template.json` | Template for your test suite. Copy this and fill in your own test cases. |
 
 ## Project Instructions
 
@@ -32,57 +32,50 @@ In this project you will build a customer support chatbot using Amazon Bedrock F
 
 When a customer reports a bug, the chatbot needs to persist it somewhere so the engineering team can follow up. In this project we use a DynamoDB table as a simple ticket store, and a Lambda function as the tool that Bedrock Agents can call to create a new ticket.
 
-The provided `create-bug-report.py` is the Lambda handler. It receives structured bug report parameters (description, steps to reproduce, environment), generates a unique ticket ID, and writes the record to DynamoDB.
-
-First, set up the infrastructure for the tool:
-
-1. **Create the DynamoDB table and Lambda function.** Follow the detailed walkthrough in [Tool Setup](docs/tool-setup.md). This guide covers creating the table, deploying the Lambda, configuring IAM permissions, and testing the function in isolation.
-
-Once the Lambda is deployed and tested, create the Bedrock Agents that will use it:
-
-2. **Create a Bedrock Agent for bug data collection.** In the Bedrock console, create a new agent. This agent's job is to talk to the customer and collect the details needed for a bug report: a description of the problem, steps to reproduce it, and the environment (browser, OS, etc.). Write the agent's instructions so that it asks the customer for any missing information before proceeding.
-
-3. **Create a Bedrock Agent for bug report creation.** Create a second agent and attach the Lambda function as an action group tool. Define a function called `create_bug_report` with three string parameters: `description`, `stepsToReproduce`, and `environment`. This agent receives the structured data from the first agent and calls the tool to persist the bug report.
-
-We use two separate agents because each has a distinct responsibility. The first agent focuses on conversation and information gathering, while the second focuses on formatting the data and calling the tool. This separation keeps each agent's prompt simple and makes the overall pipeline easier to debug.
+Follow the detailed walkthrough in [Tool Setup](docs/tool-setup.md). This guide covers creating the table, deploying the Lambda, configuring IAM permissions, and testing the function in isolation.
 
 ### Step 2: Set Up a Knowledge Base
 
-Product questions (e.g. "What is a Well-Architected Framework?") need to be answered from your documentation. Bedrock Knowledge Bases handle this by indexing documents and retrieving relevant passages at query time.
+Product questions need to be answered from internal documentation, as generic LLM models won't have product specific information. Bedrock Knowledge Bases can be used to handle this by indexing documents and retrieving relevant passages at query time.
 
-For this project, use the [AWS Well-Architected Framework PDF](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html) as your data source. This is a well-known document that is commonly used in Knowledge Base demos, and it gives you realistic content to test against without needing to prepare custom documentation.
+For this project, use the [AWS Well-Architected Framework PDF](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html) as product's internal documentation. This is a well-known document that is commonly used in Knowledge Base demos, and it gives you realistic content to test against without needing to prepare custom documentation.
+
+To test your application you will ask it questions related to the Well-Architected Framework.
 
 Follow these steps:
 
-1. **Upload the PDF to S3.** Download the Well-Architected Framework whitepaper PDF and upload it to an S3 bucket in your account.
+1. **Create a new S3 bucket in your account.** Create a new S3 bucket to store the knowledge base files.
 
-2. **Create the Knowledge Base.** In the Bedrock console, go to Knowledge Bases and create a new one. Select the S3 bucket from step 1 as the data source. Choose a default chunking strategy and an embedding model (e.g. Amazon Titan Embeddings). Bedrock will create the vector index for you.
+2. **Upload the PDF to S3.** Download the Well-Architected Framework whitepaper PDF and upload it to the S3 bucket created in step 1.
 
-3. **Sync the data source.** After creating the Knowledge Base, run a sync so that the PDF is indexed and ready for retrieval. You can test it directly in the console by asking a question like "What are the pillars of the Well-Architected Framework?" and verifying that relevant passages are returned.
+3. **Create the Knowledge Base.** In the Bedrock console, go to Knowledge Bases and create a new one. Select the S3 bucket from step 1 as the data source. Choose a default chunking strategy and an embedding model (e.g. Amazon Titan Embeddings). Bedrock will create the vector index for you.
+
+4. **Sync the data source.** After creating the Knowledge Base, run a sync so that the PDF is indexed and ready for retrieval. You can test it directly in the console by asking a question like "What are the pillars of the Well-Architected Framework?" and verifying that relevant passages are returned.
 
 ### Step 3: Build the Bedrock Flow
 
-Now that you have the bug report tool and the Knowledge Base ready, create a Bedrock Flow that ties everything together. The flow receives a customer message, classifies it, and routes it to the appropriate path.
+Now that you have the bug report tool and the Knowledge Base ready, create a Bedrock Flow that ties everything together.
 
-Open the Bedrock Flows console and build the flow step by step:
+The flow should accept a customer message and classify it into one of the known categories. Based on the classification, it should route the message to the appropriate handler.
 
-1. **Add the Input node.** Every flow starts with an Input node. This is where the customer message enters the flow as a string.
+The flow should handle three paths:
 
-2. **Add a classification Prompt node.** Connect it to the Input node. Write a prompt that classifies the customer message as `BUG_REPORT` or `PRODUCT_QUESTION`. Instruct the model to return just one word. This is important because the Condition node downstream uses exact string matching, so the classifier must output a single, predictable token. Only list two categories explicitly; anything that doesn't match will fall through to the default branch, so you don't need to maintain a growing list of category names.
+- **Bug reports.** The customer may not provide all the details upfront. Use an agent to collect the missing information (description, steps to reproduce, environment) before creating a ticket.
 
-3. **Add a Condition node.** Connect it to the classification Prompt node. Define two conditions:
-   - `is_bug`: `conditionInput == "BUG_REPORT"`
-   - `is_product_question`: `conditionInput == "PRODUCT_QUESTION"`
+- **Product questions.** Use the Knowledge Base from Step 2 to retrieve relevant passages, then summarize them into a helpful customer-facing response. The raw retrieval results might not be suitable to show directly — they need to be synthesized. If the Knowledge Base doesn't have relevant content, the customer should still get a useful response rather than silence.
 
-   Any input that matches neither condition will follow the `default` branch.
+- **Everything else.** Any request that doesn't fit the known categories (billing changes, account updates, etc.) can't be handled automatically. The customer should be politely directed to a human support channel.
 
-4. **Wire up the bug report path.** Add an Agent node for the BugDataCollector agent from Step 1 and connect the `is_bug` condition to it. Feed the original customer message (from the Input node) into the agent, not the classification output. Then add a second Agent node for the BugReportCreator agent and connect it after the first. Finally, add an Output node at the end of this chain.
+Every execution path in a Bedrock Flow must terminate at its own Output node.
 
-5. **Wire up the product question path.** Add a Knowledge Base node and connect the `is_product_question` condition to it. Feed the original customer message as the retrieval query. Then add a Prompt node that receives both the original customer message and the Knowledge Base retrieval results. Write a prompt that summarizes the retrieved passages into a helpful answer, or suggests calling a support phone number if the results don't address the question. Add an Output node at the end.
+#### Some suggestions
 
-6. **Wire up the default path.** Add a Prompt node and connect the `default` condition to it. Write a prompt that politely tells the customer their request can't be handled automatically and suggests calling a support phone number. Add an Output node at the end.
+Here are some things to keep in mind when working on your application:
 
-Each path needs its own Output node because Bedrock Flows requires every execution path to terminate at an Output node.
+* Condition nodes in Bedrock Flows use exact string matching, so the classification output needs to be predictable.
+* You can use an agent node to collect more information if initial request is unclear or incomplete.
+* A single Output node can't receive connections from multiple branches. You need a separate Output node for each path.
+* Knowledge Base retrieval results are raw document chunks, not polished answers. You'll likely need a Prompt node after the KB node to synthesize them into a customer-friendly response.
 
 ## Testing
 
@@ -94,15 +87,11 @@ Set `flowInputNode.nodeName` to the name of the Input node in your flow.
 
 ### Test Manually in the Console
 
-Before running the full test suite, try your flow in the Bedrock console. Enter a customer message and verify that it is routed to the correct branch. Use one message per category to confirm the classifier works:
-
-- A message describing a software problem (should go to the bug report path).
-- A question about the Well-Architected Framework (should go to the Knowledge Base path).
-- A request that doesn't fit either category, like a billing change (should go to the default path).
+Before running the full test suite, try your flow in the Bedrock console. Enter a customer message and verify that it is routed to the correct branch. Use one message per category to confirm the classifier works. Think about other use-cases you might need to test.
 
 ### Automated Testing and Evaluation
 
-Once the flow handles all three branches correctly in the console, follow the detailed walkthrough in [Testing and Evaluation](docs/testing.md) to run automated tests and evaluate your flow. This guide covers creating a flow alias, setting up the Python environment, running the test script, and using Bedrock Evaluations with LLM-as-a-judge to score your flow's responses.
+Once the flow handles all three branches correctly in the console, follow the detailed walkthrough in [Testing and Evaluation](docs/testing.md) to run automated tests and evaluate your flow.
 
 ## Built With
 
