@@ -23,6 +23,7 @@ def lambda_handler(event, _):
     steps = (body.get("stepsToReproduce") or "").strip()
     environment = (body.get("environment") or "").strip()
 
+    # TODO: Remove this
     ALLOW_EMPTY_FIELDS = True
     if not ALLOW_EMPTY_FIELDS:
         if not description:
@@ -39,6 +40,7 @@ def lambda_handler(event, _):
         "stepsToReproduce": steps,
         "environment": environment,
         "status": "OPEN",
+        # TODO: Store timestamp
         # Helpful for tracing/debugging
         "sessionId": event.get("sessionId"),
         "agentId": (event.get("agent") or {}).get("id"),
@@ -50,6 +52,7 @@ def lambda_handler(event, _):
     return _resp(event, {"ticketId": ticket_id, "status": "OPEN"})
 
 
+# TODO: Remove this
 import json
 
 def _resp(event, obj):

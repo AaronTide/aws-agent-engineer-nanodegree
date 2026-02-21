@@ -20,6 +20,7 @@ In this project you will build a customer support chatbot using Amazon Bedrock F
 | File | Description |
 |------|-------------|
 | `create-bug-report.py` | Lambda function that stores bug reports in DynamoDB. Deploy this as an Agent tool. |
+| `tool-setup.md` | Step-by-step guide for creating the DynamoDB table, Lambda function, and IAM permissions. |
 | `generate-eval-dataset.py` | Script that runs your flow against a test suite and produces a JSONL file for Bedrock Evaluations. |
 | `flow-tests-template.json` | Template for your test suite. Copy this and fill in your own test cases. |
 | `solution/` | Reference solution with the complete flow definition, test prompts, and a diagram. |
@@ -32,15 +33,15 @@ When a customer reports a bug, the chatbot needs to persist it somewhere so the 
 
 The provided `create-bug-report.py` is the Lambda handler. It receives structured bug report parameters (description, steps to reproduce, environment), generates a unique ticket ID, and writes the record to DynamoDB.
 
-Follow these steps to deploy it:
+First, set up the infrastructure for the tool:
 
-1. **Create the DynamoDB table.** In the DynamoDB console, create a table named `BugReports`. Set the partition key to `ticketId` (String). The default on-demand capacity settings are fine for this project.
+1. **Create the DynamoDB table and Lambda function.** Follow the detailed walkthrough in [Tool Setup](tool-setup.md). This guide covers creating the table, deploying the Lambda, configuring IAM permissions, and testing the function in isolation.
 
-2. **Create the Lambda function.** In the Lambda console, create a new function with a Python 3.9+ runtime. Copy the contents of `create-bug-report.py` into the function code. Under the function's execution role, add a policy that allows `dynamodb:PutItem` on the `BugReports` table.
+Once the Lambda is deployed and tested, create the Bedrock Agents that will use it:
 
-3. **Create a Bedrock Agent for bug data collection.** In the Bedrock console, create a new agent. This agent's job is to talk to the customer and collect the details needed for a bug report: a description of the problem, steps to reproduce it, and the environment (browser, OS, etc.). Write the agent's instructions so that it asks the customer for any missing information before proceeding.
+2. **Create a Bedrock Agent for bug data collection.** In the Bedrock console, create a new agent. This agent's job is to talk to the customer and collect the details needed for a bug report: a description of the problem, steps to reproduce it, and the environment (browser, OS, etc.). Write the agent's instructions so that it asks the customer for any missing information before proceeding.
 
-4. **Create a Bedrock Agent for bug report creation.** Create a second agent and attach the Lambda function from step 2 as an action group tool. Define a function called `create_bug_report` with three string parameters: `description`, `stepsToReproduce`, and `environment`. This agent receives the structured data from the first agent and calls the tool to persist the bug report.
+3. **Create a Bedrock Agent for bug report creation.** Create a second agent and attach the Lambda function as an action group tool. Define a function called `create_bug_report` with three string parameters: `description`, `stepsToReproduce`, and `environment`. This agent receives the structured data from the first agent and calls the tool to persist the bug report.
 
 We use two separate agents because each has a distinct responsibility. The first agent focuses on conversation and information gathering, while the second focuses on formatting the data and calling the tool. This separation keeps each agent's prompt simple and makes the overall pipeline easier to debug.
 
