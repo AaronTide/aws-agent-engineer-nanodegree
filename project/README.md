@@ -1,6 +1,6 @@
 # Customer Support Chatbot with Amazon Bedrock Flows
 
-In this project you will build a customer support chatbot using Amazon Bedrock Flows. The chatbot classifies incoming customer messages and routes them to the appropriate handler:
+In this project you will build a customer support chatbot using Amazon Bedrock Flows. The chatbot will need to handle one of the following types of messages:
 
 - **Bug reports** - Collected by an agent and stored in a DynamoDB table via a Lambda tool.
 - **Product questions** - Answered using a Knowledge Base with your product documentation.
