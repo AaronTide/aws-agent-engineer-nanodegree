@@ -205,4 +205,4 @@ If it fails with a `ResourceNotFoundException`, check that the DynamoDB table na
 
 ## Next Steps
 
-Now that the Lambda function can create bug reports in DynamoDB, the next step is to connect it to a Bedrock Agent. Go back to the main [README](README.md) and continue with the agent setup in Step 1.
+Now that the Lambda function can create bug reports in DynamoDB, the next step is to connect it to a Bedrock Agent. Go back to the main [README](../README.md) and continue with the agent setup in Step 1.

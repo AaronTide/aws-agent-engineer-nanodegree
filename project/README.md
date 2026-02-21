@@ -20,9 +20,10 @@ In this project you will build a customer support chatbot using Amazon Bedrock F
 | File | Description |
 |------|-------------|
 | `create-bug-report.py` | Lambda function that stores bug reports in DynamoDB. Deploy this as an Agent tool. |
-| `tool-setup.md` | Step-by-step guide for creating the DynamoDB table, Lambda function, and IAM permissions. |
+| `docs/tool-setup.md` | Step-by-step guide for creating the DynamoDB table, Lambda function, and IAM permissions. |
 | `generate-eval-dataset.py` | Script that runs your flow against a test suite and produces a JSONL file for Bedrock Evaluations. |
 | `flow-tests-template.json` | Template for your test suite. Copy this and fill in your own test cases. |
+| `docs/testing.md` | Step-by-step guide for automated testing, creating a flow alias, and running Bedrock Evaluations. |
 | `solution/` | Reference solution with the complete flow definition, test prompts, and a diagram. |
 
 ## Project Instructions
@@ -35,7 +36,7 @@ The provided `create-bug-report.py` is the Lambda handler. It receives structure
 
 First, set up the infrastructure for the tool:
 
-1. **Create the DynamoDB table and Lambda function.** Follow the detailed walkthrough in [Tool Setup](tool-setup.md). This guide covers creating the table, deploying the Lambda, configuring IAM permissions, and testing the function in isolation.
+1. **Create the DynamoDB table and Lambda function.** Follow the detailed walkthrough in [Tool Setup](docs/tool-setup.md). This guide covers creating the table, deploying the Lambda, configuring IAM permissions, and testing the function in isolation.
 
 Once the Lambda is deployed and tested, create the Bedrock Agents that will use it:
 
@@ -99,36 +100,9 @@ Before running the full test suite, try your flow in the Bedrock console. Enter 
 - A question about the Well-Architected Framework (should go to the Knowledge Base path).
 - A request that doesn't fit either category, like a billing change (should go to the default path).
 
-### Generate an Evaluation Dataset
+### Automated Testing and Evaluation
 
-Once your flow handles all three branches correctly, use `generate-eval-dataset.py` to invoke it with every test prompt and produce a JSONL dataset for Bedrock Evaluations:
-
-```bash
-python generate-eval-dataset.py \
-  --tests-json flow-tests.json \
-  --flow-id <your-flow-id> \
-  --flow-alias-id <your-flow-alias-id>
-```
-
-This writes `output_eval_dataset.jsonl`, where each line contains the original prompt, your flow's response, and the reference response from your test file.
-
-Add the `--enable-trace` flag to print trace events for each invocation, which is useful for debugging routing issues:
-
-```bash
-python generate-eval-dataset.py \
-  --tests-json flow-tests.json \
-  --flow-id <your-flow-id> \
-  --flow-alias-id <your-flow-alias-id> \
-  --enable-trace
-```
-
-### Run Bedrock Evaluations
-
-Finally, use the generated dataset to run an LLM-as-a-judge evaluation in Bedrock:
-
-1. **Upload the dataset to S3.** Upload `output_eval_dataset.jsonl` to an S3 bucket.
-2. **Create an evaluation job.** In the Bedrock console, go to Evaluations and create a new job. Select the **LLM-as-a-judge** method and point it to the JSONL file you uploaded. The evaluator model will compare each flow response against the reference response and score it.
-3. **Review results.** Check the evaluation results to assess how well your flow handles each category of request. Look for cases where the flow misrouted a message or produced an unhelpful response, and iterate on your prompts or flow design accordingly.
+Once the flow handles all three branches correctly in the console, follow the detailed walkthrough in [Testing and Evaluation](docs/testing.md) to run automated tests and evaluate your flow. This guide covers creating a flow alias, setting up the Python environment, running the test script, and using Bedrock Evaluations with LLM-as-a-judge to score your flow's responses.
 
 ## Built With
 
