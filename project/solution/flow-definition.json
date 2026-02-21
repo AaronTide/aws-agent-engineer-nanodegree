@@ -23,7 +23,7 @@
                             "templateType": "TEXT",
                             "templateConfiguration": {
                                 "text": {
-                                    "text": "Classify an input customer message as one of the following:\n* BUG_REPORT\n* PRODUCT_QUESTION\nCustomer message:\n```\n{{customer_message}}\n```\nReturn just one word.",
+                                    "text": "Classify an input customer message as one of the following:\n* BUG_REPORT - if user is reporting a bug\n* PRODUCT_QUESTION - if there is a question about Amazon Well-Architected Framework\n* OTHER_RELATED - if it is another customer support question\n* UNRELATED - if it is an unrelated question\nCustomer message:\n```\n{{customer_message}}\n```\nReturn just one of the following:\n\n* BUG_REPORT\n* PRODUCT_QUESTION\n* OTHER_RELATED\n* UNRELATED\n\nDo not write anything else.",
                                     "inputVariables": [
                                         {
                                             "name": "customer_message"
@@ -85,6 +85,10 @@
                         {
                             "name": "is_product_question",
                             "expression": "conditionInput == \"PRODUCT_QUESTION\""
+                        },
+                        {
+                            "name": "Condition1",
+                            "expression": "conditionInput == \"OTHER_RELATED\""
                         },
                         {
                             "name": "default"
@@ -311,6 +315,54 @@
                     "type": "String"
                 }
             ]
+        },
+        {
+            "name": "UnrelatedQuestionOutputNode",
+            "type": "Output",
+            "configuration": {
+                "output": {}
+            },
+            "inputs": [
+                {
+                    "name": "document",
+                    "type": "String",
+                    "expression": "$.data"
+                }
+            ]
+        },
+        {
+            "name": "UnrelatedQuestion",
+            "type": "Prompt",
+            "configuration": {
+                "prompt": {
+                    "sourceConfiguration": {
+                        "inline": {
+                            "templateType": "TEXT",
+                            "templateConfiguration": {
+                                "text": {
+                                    "text": "You are a helpful customer support agent, but you've received an unrelated question. Politely reply that you cannot help with this question.",
+                                    "inputVariables": []
+                                }
+                            },
+                            "modelId": "amazon.nova-pro-v1:0",
+                            "inferenceConfiguration": {
+                                "text": {
+                                    "temperature": 0.699999988079071,
+                                    "topP": 0.8999999761581421,
+                                    "maxTokens": 512,
+                                    "stopSequences": []
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "outputs": [
+                {
+                    "name": "modelCompletion",
+                    "type": "String"
+                }
+            ]
         }
     ],
     "connections": [
@@ -335,17 +387,6 @@
                 "data": {
                     "sourceOutput": "modelCompletion",
                     "targetInput": "conditionInput"
-                }
-            }
-        },
-        {
-            "type": "Conditional",
-            "name": "InputClassifierConditionNode1ToOtherRequestsPromptsNode0",
-            "source": "InputClassifier",
-            "target": "OtherRequests",
-            "configuration": {
-                "conditional": {
-                    "condition": "default"
                 }
             }
         },
@@ -476,6 +517,40 @@
             "configuration": {
                 "conditional": {
                     "condition": "is_product_question"
+                }
+            }
+        },
+        {
+            "type": "Conditional",
+            "name": "InputClassifierConditionNode2ToOtherRequestsPromptsNode0",
+            "source": "InputClassifier",
+            "target": "OtherRequests",
+            "configuration": {
+                "conditional": {
+                    "condition": "Condition1"
+                }
+            }
+        },
+        {
+            "type": "Conditional",
+            "name": "InputClassifierConditionNode0ToUnrelatedQuestionPromptsNode0",
+            "source": "InputClassifier",
+            "target": "UnrelatedQuestion",
+            "configuration": {
+                "conditional": {
+                    "condition": "default"
+                }
+            }
+        },
+        {
+            "type": "Data",
+            "name": "UnrelatedQuestionPromptsNode0ToUnrelatedQuestionOutputNodeFlowOutputNode0",
+            "source": "UnrelatedQuestion",
+            "target": "UnrelatedQuestionOutputNode",
+            "configuration": {
+                "data": {
+                    "sourceOutput": "modelCompletion",
+                    "targetInput": "document"
                 }
             }
         }
