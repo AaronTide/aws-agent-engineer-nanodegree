@@ -9,6 +9,7 @@ This folder contains a complete, working solution for the customer support chatb
 | `flow-definition.json` | The full Bedrock Flow exported as JSON. |
 | `flow-tests.json` | Test suite with one prompt per branch. |
 | `final-flow.png` | Visual diagram of the flow in the Bedrock console. |
+| `agents.md` | Full configuration for both Bedrock Agents, including instructions, action groups, and design rationale. |
 
 ## Flow Architecture
 
@@ -51,7 +52,7 @@ This path chains two Agent nodes:
 
 **BugReportCreator** (Agent) receives the output of BugDataCollector. It takes the collected details and calls the `create-bug-report` Lambda tool to store a formal bug report in DynamoDB. The response includes the generated ticket ID.
 
-Two separate agents are used instead of one because each has a distinct responsibility. BugDataCollector focuses on information gathering, while BugReportCreator focuses on formatting and persisting the report. This separation makes each agent's prompt simpler and more reliable.
+Two separate agents are used instead of one because each has a distinct responsibility. BugDataCollector focuses on information gathering, while BugReportCreator focuses on formatting and persisting the report. This separation makes each agent's prompt simpler and more reliable. See [agents.md](agents.md) for the full agent instructions.
 
 ### Path 2: Product Questions
 
