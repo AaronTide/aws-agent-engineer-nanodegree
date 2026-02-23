@@ -1,5 +1,6 @@
 import json
 import uuid
+from datetime import datetime, timezone
 import boto3
 
 table = boto3.resource("dynamodb").Table("BugReports")
@@ -23,15 +24,8 @@ def lambda_handler(event, _):
     steps = (body.get("stepsToReproduce") or "").strip()
     environment = (body.get("environment") or "").strip()
 
-    # TODO: Remove this
-    ALLOW_EMPTY_FIELDS = True
-    if not ALLOW_EMPTY_FIELDS:
-        if not description:
-            return _resp(event, {"error": "missing", "field": "description"})
-        if not steps:
-            return _resp(event, {"error": "missing", "field": "stepsToReproduce"})
-        if not environment:
-            return _resp(event, {"error": "missing", "field": "environment"})
+    if not description:
+        return _resp(event, {"error": "missing", "field": "description"})
 
     ticket_id = str(uuid.uuid4())
     item = {
@@ -40,20 +34,13 @@ def lambda_handler(event, _):
         "stepsToReproduce": steps,
         "environment": environment,
         "status": "OPEN",
-        # TODO: Store timestamp
-        # Helpful for tracing/debugging
-        "sessionId": event.get("sessionId"),
-        "agentId": (event.get("agent") or {}).get("id"),
-        "agentAlias": (event.get("agent") or {}).get("alias"),
+        "createdAt": datetime.now(timezone.utc).isoformat(),
     }
 
     table.put_item(Item=item)
 
     return _resp(event, {"ticketId": ticket_id, "status": "OPEN"})
 
-
-# TODO: Remove this
-import json
 
 def _resp(event, obj):
     return {

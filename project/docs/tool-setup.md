@@ -6,69 +6,40 @@ The Bedrock Agent itself cannot write to DynamoDB directly. Agents interact with
 
 This guide walks you through creating both resources and connecting them.
 
-## 1. Create the DynamoDB Table
+## Deploy with CloudFormation
 
-We first need create a DynamoDB table, which is similar to a table in a relational database. Our DynamoDB table will store one item per bug report.
+All three resources — the DynamoDB table, the Lambda function, and the IAM role — are defined together in `cloudformation.yaml` at the root of the project. CloudFormation provisions them in the right order and wires them together automatically.
 
-DynamoDB requires to define a column with unique values that uniquely identify each row. This special column is called a partition column or a parition field. In our case it will be a column called `ticketId`
+### What the template creates
 
-### Steps
+| Resource | Name | Purpose |
+|---|---|---|
+| DynamoDB table | `BugReports` | Stores one item per bug report, keyed by `ticketId` |
+| IAM role | `create-bug-report-role` | Grants the Lambda function permission to write logs and call `PutItem` on the table |
+| Lambda function | `create-bug-report` | Receives a bug report from the Bedrock Agent and writes it to DynamoDB |
 
-Here is what you need to do to create a new DynamoDB table.
-
-1. Open the **DynamoDB** console and click **Create table**.
-
-<!-- screenshot: DynamoDB console → Create table button -->
-
-2. Set the table name to `BugReports`.
-
-3. Set the partition key to `ticketId` with type **String**.
-
-<!-- screenshot: Table creation form with name and partition key filled in -->
-
-4. Leave the rest of the settings at their defaults. On-demand capacity mode is fine for this project since we won't be generating high traffic.
-
-5. Click **Create table** and wait for the status to change to **Active**.
-
-<!-- screenshot: Table list showing BugReports with Active status -->
-
-That's all we need for the table. We don't need to define any other attributes upfront because DynamoDB is schema-flexible — the Lambda function will write additional fields (description, steps to reproduce, environment, status) and DynamoDB will accept them without any schema changes. The only mandatory field in our case is `ticketId`.
-
-## 2. Create the Lambda Function
-
-We now need do define a Lambda function that the Bedrock Agent will call to create a new ticket. When the agent decides it has enough information to file a bug report, it invokes this function with three parameters: a description of the bug, the steps to reproduce it, and the environment (browser, OS, etc.). The function generates a ticket ID, writes the record to DynamoDB, and returns the ticket ID to the agent so it can share it with the customer.
-
-The code for this function is provided in `create-bug-report.py`.
+The IAM role follows the principle of least privilege: it grants only `dynamodb:PutItem` on the `BugReports` table — nothing more.
 
 ### Steps
 
-Here is how to define a Lambda function.
+Run the following command from the project root to create the stack:
 
-1. Open the **Lambda** console and click **Create function**.
+```bash
+aws cloudformation deploy \
+  --template-file cloudformation.yaml \
+  --stack-name bug-report-stack \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --region us-east-1 \
+  --profile bedrock-user
+```
 
-<!-- screenshot: Lambda console → Create function button -->
+The `--capabilities CAPABILITY_NAMED_IAM` flag is required because the template creates a named IAM role. CloudFormation asks you to acknowledge this explicitly as a safety check.
 
-2. Select **Author from scratch**.
+Wait for the command to print `Successfully created/updated stack - bug-report-stack`. The three resources are now live.
 
-3. Set the function name to `create-bug-report`.
+### Understanding the Lambda code
 
-4. Set the runtime to **Python 3.9** (or any later Python 3.x version).
-
-5. Leave the other settings at their defaults and click **Create function**.
-
-<!-- screenshot: Create function form with name and runtime filled in -->
-
-6. In the **Code** tab we can write the implementation of our function. Just remove the default code, and replace it with the content of the `create-bug-report.py`
-
-<!-- screenshot: Lambda code editor with the create-bug-report.py code pasted in -->
-
-7. Click **Deploy** to save the function.
-
-We can now call our function to create new tickets!
-
-### Understanding the Code
-
-Before moving on, it's worth understanding what the Lambda handler does:
+The Lambda handler is defined in `create_bug_report.py` and embedded in the template. Here is what it does:
 
 - **Validates the request.** It checks that the incoming event has `messageVersion: "1.0"` and `function: "create_bug_report"`. This is the format that Bedrock Agents use when calling a tool. If the event doesn't match, the function returns an error.
 
@@ -76,60 +47,11 @@ Before moving on, it's worth understanding what the Lambda handler does:
 
 - **Generates a ticket ID.** Each bug report gets a unique UUID so it can be referenced later.
 
-- **Writes to DynamoDB.** The function stores the ticket along with metadata like the session ID and agent ID, which are useful for tracing and debugging.
+- **Writes to DynamoDB.** The function stores the ticket with a status of `OPEN` and a creation timestamp.
 
 - **Returns a response.** The function returns the ticket ID and status (`OPEN`) in the format that Bedrock Agents expect. The agent then uses this information to confirm the ticket with the customer.
 
-## 3. Grant Lambda Permission to Write to DynamoDB
-
-By default, a new Lambda function only has permission to write logs to CloudWatch. It cannot access DynamoDB or any other AWS service. If you try to invoke the function now, it will fail with an `AccessDeniedException` when it tries to call `table.put_item()`.
-
-AWS uses IAM (Identity and Access Management) to control what each service and function can do. To control what our function can do we need to update a so-called *IAM role* associated with our Lambda function.
-
-To allow our Lambda to write to DynamoDB we need to add a policy to this role that allows writing to the `BugReports` table.
-
-### Steps
-
-Here is what you need to do to allow this Lambda function to write to the `BugReports` table.
-
-1. In the Lambda console, open the `create-bug-report` function and go to the **Configuration** tab.
-
-2. Click **Permissions** in the left sidebar. You will see the function's execution role name.
-
-<!-- screenshot: Lambda Configuration → Permissions showing the execution role -->
-
-3. Click the role name to open it in the IAM console.
-
-4. Click **Add permissions** → **Attach policies** → **Create inline policy**.
-
-<!-- screenshot: IAM role page → Add permissions dropdown -->
-
-5. Switch to the **JSON** editor and paste the following policy:
-
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": "dynamodb:PutItem",
-            "Resource": "arn:aws:dynamodb:*:*:table/BugReports"
-        }
-    ]
-}
-```
-
-This policy grants the minimum permission needed: only `PutItem` (write a single record) and only on the `BugReports` table. Following the principle of least privilege, we don't grant broader permissions like `dynamodb:*` or access to all tables.
-
-<!-- screenshot: IAM policy editor with the JSON policy -->
-
-6. Click **Next**, give the policy a name (e.g. `BugReportsWriteAccess`), and click **Create policy**.
-
-7. Go back to the Lambda function's **Permissions** tab and verify the new policy appears under the execution role.
-
-<!-- screenshot: Lambda Permissions tab showing the role with the new policy attached -->
-
-## 4. Test the Lambda Function
+## Test the Lambda Function
 
 At this stage you should have a Lambda function that should be able to create new tickets. In theory now it can be used by your agent, but to make sure that everything was set up correctly, you can test this function in isolation. We can call our function from the AWS console and check if it works correctly and if it can create new tickets in DynamodDB.
 

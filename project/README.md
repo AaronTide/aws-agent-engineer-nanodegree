@@ -76,6 +76,10 @@ Here are some things to keep in mind when working on your application:
 * You can use an agent node to collect more information if initial request is unclear or incomplete.
 * A single Output node can't receive connections from multiple branches. You need a separate Output node for each path.
 * Knowledge Base retrieval results are raw document chunks, not polished answers. You'll likely need a Prompt node after the KB node to synthesize them into a customer-friendly response.
+* Don't forget to deploy resources: deploy Lambda function, prepare agents
+* Implement your solution step by step
+* Agents can prompt users for additional information
+* Use us-east-1
 
 ## Testing
 
