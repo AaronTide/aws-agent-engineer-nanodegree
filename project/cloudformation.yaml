@@ -107,6 +107,13 @@ Resources:
                   },
               }
 
+  BedrockInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreateBugReportFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+
 Outputs:
   BugReportsTableArn:
     Description: ARN of the BugReports DynamoDB table
