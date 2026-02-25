@@ -228,95 +228,6 @@
             ]
         },
         {
-            "name": "KnowledgeBaseNode",
-            "type": "KnowledgeBase",
-            "configuration": {
-                "knowledgeBase": {
-                    "knowledgeBaseId": "6IJMLSQG5O"
-                }
-            },
-            "inputs": [
-                {
-                    "name": "retrievalQuery",
-                    "type": "String",
-                    "expression": "$.data"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "retrievalResults",
-                    "type": "Array"
-                }
-            ]
-        },
-        {
-            "name": "KnowledgeBaseOutputNode",
-            "type": "Output",
-            "configuration": {
-                "output": {}
-            },
-            "inputs": [
-                {
-                    "name": "document",
-                    "type": "String",
-                    "expression": "$.data"
-                }
-            ]
-        },
-        {
-            "name": "AggregateKnowledgeBase",
-            "type": "Prompt",
-            "configuration": {
-                "prompt": {
-                    "sourceConfiguration": {
-                        "inline": {
-                            "templateType": "TEXT",
-                            "templateConfiguration": {
-                                "text": {
-                                    "text": "You are a helpful online assistant. You will receive a customer request, and output from a Knowledge Base.\n\nIf the output from the Knowledge Base answers user's question, summarize it and provide a helpful response to a user.\n\nIf the output does not replies to the user's question, suggest you can't answer it and suggest to call +12345678.\n\nUser's question:\n\n```\n{{customer_message}}\n```\n\nSearch result from Knowledge Base:\n\n```\n{{kb_output}}\n```",
-                                    "inputVariables": [
-                                        {
-                                            "name": "customer_message"
-                                        },
-                                        {
-                                            "name": "kb_output"
-                                        }
-                                    ]
-                                }
-                            },
-                            "modelId": "arn:aws:bedrock:us-east-1:<account-id>:inference-profile/us.amazon.nova-premier-v1:0",
-                            "inferenceConfiguration": {
-                                "text": {
-                                    "temperature": 0.699999988079071,
-                                    "topP": 0.8999999761581421,
-                                    "maxTokens": 512,
-                                    "stopSequences": []
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "inputs": [
-                {
-                    "name": "customer_message",
-                    "type": "String",
-                    "expression": "$.data"
-                },
-                {
-                    "name": "kb_output",
-                    "type": "Array",
-                    "expression": "$.data"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "modelCompletion",
-                    "type": "String"
-                }
-            ]
-        },
-        {
             "name": "UnrelatedQuestionOutputNode",
             "type": "Output",
             "configuration": {
@@ -518,30 +429,6 @@
             "configuration": {
                 "data": {
                     "sourceOutput": "agentResponse",
-                    "targetInput": "document"
-                }
-            }
-        },
-        {
-            "type": "Data",
-            "name": "KnowledgeBaseNodeKnowledgeBaseNode0ToAggregateKnowledgeBasePromptsNode1",
-            "source": "KnowledgeBaseNode",
-            "target": "AggregateKnowledgeBase",
-            "configuration": {
-                "data": {
-                    "sourceOutput": "retrievalResults",
-                    "targetInput": "kb_output"
-                }
-            }
-        },
-        {
-            "type": "Data",
-            "name": "AggregateKnowledgeBasePromptsNode0ToKnowledgeBaseOutputNodeFlowOutputNode0",
-            "source": "AggregateKnowledgeBase",
-            "target": "KnowledgeBaseOutputNode",
-            "configuration": {
-                "data": {
-                    "sourceOutput": "modelCompletion",
                     "targetInput": "document"
                 }
             }
