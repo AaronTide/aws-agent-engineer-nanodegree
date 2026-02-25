@@ -21,12 +21,14 @@ The flow has three paths that fan out from a shared classification step. Below i
 
 **FlowInputNode** (Input) receives the raw customer message as a string.
 
-**InputPrompt** (Prompt) classifies the message into one of two known categories. The prompt is intentionally constrained:
+**InputPrompt** (Prompt) classifies the message into one of four categories. The prompt is intentionally constrained:
 
 ```
 Classify an input customer message as one of the following:
 * BUG_REPORT
-* PRODUCT_QUESTION
+* PLATFORM_QUESTION
+* OTHER_RELATED
+* UNRELATED
 Customer message:
 ```{{customer_message}}```
 Return just one word.
@@ -34,15 +36,14 @@ Return just one word.
 
 The instruction "Return just one word" is important. The Condition node downstream performs an exact string match (`conditionInput == "BUG_REPORT"`), so the classifier must return a single, predictable token. Allowing free-form output would make the condition unreliable.
 
-Only two explicit categories are listed. Any message that does not fit either one will produce a response that matches neither condition, causing it to fall through to the `default` branch. This avoids maintaining an ever-growing list of categories and keeps the classifier focused.
-
 **InputClassifier** (Condition) routes execution based on the classification:
 
 | Condition | Expression | Target path |
 |-----------|-----------|-------------|
 | `is_bug` | `conditionInput == "BUG_REPORT"` | Bug report agents |
-| `is_product_question` | `conditionInput == "PRODUCT_QUESTION"` | Knowledge Base |
-| `default` | *(none - catches everything else)* | Other requests prompt |
+| `is_product_question` | `conditionInput == "PLATFORM_QUESTION"` | FAQ prompt |
+| `Condition1` | `conditionInput == "OTHER_RELATED"` | Other requests prompt |
+| `default` | *(none - catches everything else)* | Unrelated question prompt |
 
 ### Path 1: Bug Reports
 
@@ -54,18 +55,11 @@ This path chains two Agent nodes:
 
 Two separate agents are used instead of one because each has a distinct responsibility. BugDataCollector focuses on information gathering, while BugReportCreator focuses on formatting and persisting the report. This separation makes each agent's prompt simpler and more reliable. See [agents.md](agents.md) for the full agent instructions.
 
-### Path 2: Product Questions
+### Path 2: Platform Questions
 
-This path combines retrieval with summarization:
+**FaqQuestion** (Prompt) receives the original customer message and answers it using an FAQ document embedded directly in the prompt. If the FAQ covers the question, the model summarizes a helpful response. If it doesn't, the model suggests calling the support phone number.
 
-**KnowledgeBaseNode** (KnowledgeBase) takes the original customer message from FlowInputNode and queries the Knowledge Base. It returns raw retrieval results as an array of matched document chunks.
-
-**AggregateKnowledgeBase** (Prompt) receives two inputs: the original customer message (from FlowInputNode) and the retrieval results (from KnowledgeBaseNode). Its prompt instructs the model to:
-
-- Summarize the Knowledge Base results into a helpful response if they answer the question.
-- Suggest calling the support phone number if the results are not relevant.
-
-This two-step design (retrieve then summarize) is used instead of a single RetrieveAndGenerate call because the Prompt node gives full control over how results are presented to the user. The fallback instruction ("suggest to call +12345678") ensures the chatbot never leaves the customer without a next step, even when the Knowledge Base has no relevant content.
+Embedding the FAQ in the prompt is the simplest approach and works well for short, stable content. For large documents this approach becomes costly and hits context limits — the standard solution is **Retrieval-Augmented Generation (RAG)**, which retrieves only the relevant passages at query time using a vector index. RAG with Amazon Bedrock Knowledge Bases is covered in a later course.
 
 ### Path 3: Other Requests
 
@@ -75,7 +69,7 @@ This path exists as a catch-all so the chatbot always responds, rather than fail
 
 ### Output Nodes
 
-Each path has its own Output node (`BugReportOutputNode`, `KnowledgeBaseOutputNode`, `OtherRequestsOutputNode`). Separate outputs are used because Bedrock Flows requires each execution path to terminate at an Output node, and a single output node cannot receive connections from multiple upstream branches.
+Each path has its own Output node (`BugReportOutputNode`, `FlowOutputNode_1`, `OtherRequestsOutputNode`, `UnrelatedQuestionOutputNode`). Separate outputs are used because Bedrock Flows requires each execution path to terminate at an Output node, and a single output node cannot receive connections from multiple upstream branches.
 
 ## Test Suite
 
@@ -87,11 +81,11 @@ Each path has its own Output node (`BugReportOutputNode`, `KnowledgeBaseOutputNo
 
 This prompt describes a clear software defect and includes environment details (Safari). It should be classified as `BUG_REPORT` and routed to the BugDataCollector agent. The expected response acknowledges the issue and asks for reproduction steps, confirming the agent is gathering structured data before creating a ticket.
 
-### t2_product_question_branch (PRODUCT_QUESTION)
+### t2_product_question_branch (PLATFORM_QUESTION)
 
-**Prompt:** "What is a Well-Architected Framework?"
+**Prompt:** "What is your return policy?"
 
-A factual question about an AWS product. It should be classified as `PRODUCT_QUESTION` and routed to the Knowledge Base path. The expected response summarizes what the Well-Architected Framework is, based on content retrieved from the Knowledge Base.
+A common platform question about returns. It should be classified as `PLATFORM_QUESTION` and routed to the FAQ prompt node. The expected response summarizes the return policy based on the embedded FAQ content.
 
 ### t3_default_other_branch (OTHER)
 

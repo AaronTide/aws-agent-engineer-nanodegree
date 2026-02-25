@@ -3,7 +3,7 @@
 In this project you will build a customer support chatbot using Amazon Bedrock Flows. The chatbot will need to handle one of the following types of messages:
 
 - **Bug reports** - if a customer reports a bug the application need to collect additional information and create a ticket for the reported bug.
-- **Product questions** - the application should respond to a question using its Knowledge Base.
+- **Platform questions** - the application should answer common questions about orders, shipping, returns, and payments using an embedded FAQ.
 - **Other requests** - politely redirected to a human support phone line.
 
 ## Getting Started
@@ -22,7 +22,7 @@ In this project you will build a customer support chatbot using Amazon Bedrock F
 | `docs/tool-setup.md` | Step-by-step guide for creating the DynamoDB table, Lambda function, and IAM permissions. |
 | `docs/testing.md` | Step-by-step guide for automated testing, creating a flow alias, and running Bedrock Evaluations. |
 | `solution/` | Reference solution with the complete flow definition, test prompts, and a diagram. |
-| `create-bug-report.py` | Lambda function that stores bug reports in DynamoDB. Deploy this as an Agent tool. |
+| `create_bug_report.py` | Lambda function that stores bug reports in DynamoDB. Deploy this as an Agent tool. |
 | `generate-eval-dataset.py` | Script that runs your flow against a test suite and produces a JSONL file for Bedrock Evaluations. |
 | `flow-tests-template.json` | Template for your test suite. Copy this and fill in your own test cases. |
 
@@ -34,27 +34,17 @@ When a customer reports a bug, the chatbot needs to persist it somewhere so the 
 
 Follow the detailed walkthrough in [Tool Setup](docs/tool-setup.md). This guide covers creating the table, deploying the Lambda, configuring IAM permissions, and testing the function in isolation.
 
-### Step 2: Set Up a Knowledge Base
+### Step 2: Handle Platform Questions
 
-Product questions need to be answered from internal documentation, as generic LLM models won't have product specific information. Bedrock Knowledge Bases can be used to handle this by indexing documents and retrieving relevant passages at query time.
+Platform questions (orders, shipping, returns, payments) need to be answered from your product's documentation. The simplest approach is to embed the document directly in the prompt — the model reads it at inference time and answers from it.
 
-For this project, use the [AWS Well-Architected Framework PDF](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html) as product's internal documentation. This is a well-known document that is commonly used in Knowledge Base demos, and it gives you realistic content to test against without needing to prepare custom documentation.
+In this project, the flow includes a `FaqQuestion` prompt node that embeds a short FAQ document inline. You can replace the FAQ content with your own documentation.
 
-To test your application you will ask it questions related to the Well-Architected Framework.
-
-Follow these steps:
-
-1. **Create a new S3 bucket in your account.** Create a new S3 bucket to store the knowledge base files.
-
-2. **Upload the PDF to S3.** Download the Well-Architected Framework whitepaper PDF and upload it to the S3 bucket created in step 1.
-
-3. **Create the Knowledge Base.** In the Bedrock console, go to Knowledge Bases and create a new one. Select the S3 bucket from step 1 as the data source. Choose a default chunking strategy and an embedding model (e.g. Amazon Titan Embeddings). Bedrock will create the vector index for you.
-
-4. **Sync the data source.** After creating the Knowledge Base, run a sync so that the PDF is indexed and ready for retrieval. You can test it directly in the console by asking a question like "What are the pillars of the Well-Architected Framework?" and verifying that relevant passages are returned.
+> **Note:** Embedding documents in the prompt works well for short, stable content like a FAQ. For large documents, embedding the full text in every prompt becomes expensive and hits context limits. The standard solution is **Retrieval-Augmented Generation (RAG)**, which retrieves only the relevant passages at query time using a vector index. RAG with Amazon Bedrock Knowledge Bases is covered in a later course.
 
 ### Step 3: Build the Bedrock Flow
 
-Now that you have the bug report tool and the Knowledge Base ready, create a Bedrock Flow that ties everything together.
+Now that you have the bug report tool ready, create a Bedrock Flow that ties everything together.
 
 The flow should accept a customer message and classify it into one of the known categories. Based on the classification, it should route the message to the appropriate handler.
 
@@ -62,7 +52,7 @@ The flow should handle three paths:
 
 - **Bug reports.** The customer may not provide all the details upfront. Use an agent to collect the missing information (description, steps to reproduce, environment) before creating a ticket.
 
-- **Product questions.** Use the Knowledge Base from Step 2 to retrieve relevant passages, then summarize them into a helpful customer-facing response. The raw retrieval results might not be suitable to show directly — they need to be synthesized. If the Knowledge Base doesn't have relevant content, the customer should still get a useful response rather than silence.
+- **Platform questions.** Use a Prompt node with an embedded FAQ to answer common questions about orders, shipping, returns, and payments. If the FAQ doesn't cover the question, the customer should still get a useful response rather than silence.
 
 - **Everything else.** Any request that doesn't fit the known categories (billing changes, account updates, etc.) can't be handled automatically. The customer should be politely directed to a human support channel.
 
@@ -75,7 +65,7 @@ Here are some things to keep in mind when working on your application:
 * Condition nodes in Bedrock Flows use exact string matching, so the classification output needs to be predictable.
 * You can use an agent node to collect more information if initial request is unclear or incomplete.
 * A single Output node can't receive connections from multiple branches. You need a separate Output node for each path.
-* Knowledge Base retrieval results are raw document chunks, not polished answers. You'll likely need a Prompt node after the KB node to synthesize them into a customer-friendly response.
+* For platform questions, embed your FAQ directly in the prompt. Keep it concise — large documents inflate token costs and can hit context limits.
 * Don't forget to deploy resources: deploy Lambda function, prepare agents
 * Implement your solution step by step
 * Agents can prompt users for additional information
@@ -101,7 +91,6 @@ Once the flow handles all three branches correctly in the console, follow the de
 
 * [Amazon Bedrock Flows](https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html) - Orchestration of the LLM application
 * [Amazon Bedrock Agents](https://docs.aws.amazon.com/bedrock/latest/userguide/agents.html) - Tool use for bug report creation
-* [Amazon Bedrock Knowledge Bases](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html) - RAG for product questions
 * [Amazon Bedrock Evaluations](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html) - LLM-as-a-judge evaluation
 * [AWS Lambda](https://aws.amazon.com/lambda/) - Bug report tool runtime
 * [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) - Bug report storage
