@@ -23,7 +23,7 @@
                             "templateType": "TEXT",
                             "templateConfiguration": {
                                 "text": {
-                                    "text": "Classify an input customer message as one of the following:\n* BUG_REPORT - if user is reporting a bug\n* PLATFORM_QUESTION - if there is a question about the online shop such as orders, shipping, refunds, etc. \n* OTHER_RELATED - if it is another customer support question\n* UNRELATED - if it is an unrelated question\nCustomer message:\n```\n{{customer_message}}\n```\nReturn just one of the following:\n\n* BUG_REPORT\n* PLATFORM_QUESTION\n* OTHER_RELATED\n* UNRELATED\n\nDo not write anything else.",
+                                    "text": "Classify an input customer message as one of the following:\n* BUG_REPORT - if user is reporting a bug\n* PLATFORM_QUESTION - if there is a question about the online shop such as orders, shipping, returns, refunds, etc. \n* OTHER_RELATED - if it is another customer support question\n* UNRELATED - if it is an unrelated question\nCustomer message:\n```\n{{customer_message}}\n```\nReturn just one of the following:\n\n* BUG_REPORT\n* PLATFORM_QUESTION\n* OTHER_RELATED\n* UNRELATED\n\nDo not write anything else.",
                                     "inputVariables": [
                                         {
                                             "name": "customer_message"
@@ -31,7 +31,7 @@
                                     ]
                                 }
                             },
-                            "modelId": "arn:aws:bedrock:us-east-1:<account-id>:inference-profile/us.amazon.nova-premier-v1:0",
+                            "modelId": "amazon.nova-pro-v1:0",
                             "inferenceConfiguration": {
                                 "text": {
                                     "temperature": 0.699999988079071,

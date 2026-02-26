@@ -185,6 +185,7 @@ python generate-eval-dataset.py \
   --tests-json flow-tests.json \
   --flow-id <your-flow-id> \
   --flow-alias-id <your-flow-alias-id> \
+  --region=us-east1 \
   --enable-trace
 ```
 
