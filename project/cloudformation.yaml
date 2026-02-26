@@ -107,6 +107,11 @@ Resources:
                   },
               }
 
+  EvalDatasetBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub udacity-agentic-engineer-c1-eval-${AWS::AccountId}
+
   BedrockInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -126,3 +131,7 @@ Outputs:
   LambdaExecutionRoleArn:
     Description: ARN of the Lambda execution IAM role
     Value: !GetAtt LambdaExecutionRole.Arn
+
+  EvalDatasetBucketName:
+    Description: Name of the S3 bucket for evaluation datasets
+    Value: !Ref EvalDatasetBucket

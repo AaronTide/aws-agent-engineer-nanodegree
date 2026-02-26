@@ -1,14 +1,17 @@
-# Tool Setup: DynamoDB Table and Lambda Function
+# Resources Setup
+
+
+This section will guide how to create resources needed for this demo, including the tool that the agent will use to create bug reports and an S3 bucket that will be used later to run Bedrock evals.
+
+## Tool to create a bug report
 
 When a customer reports a bug, the chatbot needs to persist it somewhere so the engineering team can track and follow up on it. A simple way to do this is to store each bug report as a record in a database. In this project we use DynamoDB as our database of choice, but we could have used any other datastore.
 
 The Bedrock Agent itself cannot write to DynamoDB directly. Agents interact with external systems through *tools* — functions that the agent can invoke during a conversation. AWS Lambda is the standard way to implement these tools: you write a  function, and the agent calls it with structured parameters. The Lambda function then does the actual work (in our case, writing to DynamoDB).
 
-This guide walks you through creating both resources and connecting them.
-
 ## Deploy with CloudFormation
 
-All three resources — the DynamoDB table, the Lambda function, and the IAM role — are defined together in `cloudformation.yaml` at the root of the project. CloudFormation provisions them in the right order and wires them together automatically.
+All resources — are defined together in `cloudformation.yaml` at the root of the project. CloudFormation provisions them in the right order and wires them together automatically.
 
 ### What the template creates
 
@@ -17,6 +20,7 @@ All three resources — the DynamoDB table, the Lambda function, and the IAM rol
 | DynamoDB table | `BugReports` | Stores one item per bug report, keyed by `ticketId` |
 | IAM role | `create-bug-report-role` | Grants the Lambda function permission to write logs and call `PutItem` on the table |
 | Lambda function | `create-bug-report` | Receives a bug report from the Bedrock Agent and writes it to DynamoDB |
+| S3 bucket | `udacity-agentic-engineer-c1-eval-<account-id>` | Will be used later to run Bedrock evals  |
 
 The IAM role follows the principle of least privilege: it grants only `dynamodb:PutItem` on the `BugReports` table — nothing more.
 
@@ -32,6 +36,9 @@ aws cloudformation deploy \
   --region us-east-1 \
   --profile bedrock-user
 ```
+
+
+
 
 The `--capabilities CAPABILITY_NAMED_IAM` flag is required because the template creates a named IAM role. CloudFormation asks you to acknowledge this explicitly as a safety check.
 
