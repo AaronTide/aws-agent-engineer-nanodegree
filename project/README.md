@@ -23,7 +23,7 @@ You would need to create a Bedrock Flow application, and then test it in various
 
 | File | Description |
 |------|-------------|
-| `docs/resources-setup.md` | Step-by-step guide for creating resources for developing and testing your application. |
+| `docs/tools-setup.md` | Step-by-step guide for creating the bug report tool. |
 | `docs/testing.md` | Step-by-step guide for automated testing and running Bedrock Evaluations. |
 | `solution/` | Reference solution with the complete flow definition, test prompts, and a diagram. |
 | `cloudformation.yaml` | A template for creating resources you would need for this application. |
@@ -39,7 +39,7 @@ First you will create a tool that your application will need to create bug repor
 
 When a customer reports a bug, the chatbot needs to persist it somewhere so the engineering team can follow up. In this project we use a DynamoDB table as a simple ticket store, and a Lambda function as the tool that Bedrock Agents can call to create a new ticket.
 
-Follow the detailed walkthrough in [Resources Setup](docs/resources-setup.md). Follow this guide first, to ensure that you have everything you need for the rest of the project
+Follow the detailed walkthrough in [Tools Setup](docs/tools-setup.md). Follow this guide first, to ensure that you have everything you need for the rest of the project
 
 ### Step 2: Build the Bedrock Flow
 

@@ -153,7 +153,35 @@ Each line is a JSON object with this structure:
 
 If any flow call failed, the `response` field will contain an error message prefixed with `[FLOW_ERROR]`. Check the terminal output for details on what went wrong.
 
-## 5. Run Bedrock Evaluations
+## 5. Create Testing Resources
+
+Before running evaluations you need an S3 bucket to store the dataset and results, and an IAM role that Bedrock Evaluations can assume. These are defined in `cloudformation-testing.yaml`.
+
+### Steps
+
+1. Deploy the testing stack:
+
+```bash
+aws cloudformation deploy \
+  --template-file cloudformation-testing.yaml \
+  --stack-name bug-report-testing-stack \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --region us-east-1
+```
+
+2. Once the stack is created, retrieve the outputs — you will need the bucket name and role ARN in the steps below:
+
+```bash
+aws cloudformation describe-stacks \
+  --stack-name bug-report-testing-stack \
+  --query 'Stacks[0].Outputs' \
+  --output table \
+  --region us-east-1
+```
+
+This prints `EvalDatasetBucketName` and `BedrockEvalRoleArn`. Keep these values handy.
+
+## 6. Run Bedrock Evaluations
 
 Now that you have a JSONL dataset with your flow's responses alongside reference responses, you can use Bedrock Evaluations to assess quality automatically. Bedrock Evaluations supports an **LLM-as-a-judge** method: an evaluator LLM reads each of the flow's response, the reference response, and then scores how well the flow answered.
 
@@ -161,20 +189,7 @@ We use the **Bring Your Own Inference (BYOI)** approach because our responses co
 
 ### Upload the Dataset
 
-You first need to upload the JSONL dataset to the S3 bucket that was created by the CloudFormation stack earlier in this project.
-
-**Find the bucket name.** Run the following command to retrieve it from the stack outputs:
-
-```bash
-aws cloudformation describe-stacks \
-  --stack-name bug-report-stack \
-  --query 'Stacks[0].Outputs[?OutputKey==`EvalDatasetBucketName`].OutputValue' \
-  --output text \
-  --region us-east-1 \
-  --profile bedrock-user
-```
-
-Alternatively, open the S3 console and look for a bucket whose name starts with `udacity-agentic-engineer-c1-eval-`.
+You first need to upload the JSONL dataset to the S3 bucket created in the previous step. Use the `EvalDatasetBucketName` value from the stack outputs.
 
 **Upload the file:**
 
@@ -188,7 +203,7 @@ Note the full S3 URI (e.g. `s3://udacity-agentic-engineer-c1-eval-123456789012/o
 
 ### Create the Evaluation Job
 
-Before running this command you need the ARN of the IAM role and the name of the S3 bucket created by the CloudFormation stack. Both are printed as stack outputs when you run `aws cloudformation deploy`. You can also find them in the AWS console: open **CloudFormation** → **Stacks** → **bug-report-stack** → **Outputs** tab. Look for `BedrockEvalRoleArn` and `EvalDatasetBucketName`.
+Use the `BedrockEvalRoleArn` and `EvalDatasetBucketName` values from the `bug-report-testing-stack` outputs you retrieved in step 5.
 
 Run the following command to create an LLM-as-a-judge evaluation job using your uploaded dataset:
 
@@ -223,25 +238,12 @@ aws bedrock create-evaluation-job \
     }]
   }' \
   --output-data-config '{"s3Uri": "s3://<EvalDatasetBucketName>/results/"}' \
-  --region us-east-1 \
-  --profile bedrock-user
+  --region us-east-1
 ```
 
 Replace `<BedrockEvalRoleArn>` and `<EvalDatasetBucketName>` with the values from the CloudFormation stack outputs.
 
-The job may take a few minutes to complete. To check its status:
-
-```bash
-aws bedrock list-evaluation-jobs \
-  --region us-east-1 \
-  --profile bedrock-user \
-  --query 'jobSummaries[?jobName==`flow-eval-run-1`].[jobName,status]' \
-  --output table
-```
-
 To view the results in the console, go to [Amazon Bedrock](https://console.aws.amazon.com/bedrock) → **Evaluations** in the left sidebar → click on your job once it shows status **Completed**.
-
-<!-- screenshot: Evaluation jobs list showing the job completed -->
 
 ### Review the Results
 
@@ -249,14 +251,14 @@ To view the results in the console, go to [Amazon Bedrock](https://console.aws.a
 
 2. The results page shows overall scores and per-record breakdowns. The evaluator model scores each response based on how well it matches the intent described in the reference response.
 
-<!-- screenshot: Evaluation results page showing scores -->
+![Evaluation results page showing scores](images/eval-job-result.png)
 
 3. Look for patterns in the scores:
    - Are all three branches producing reasonable responses?
    - Are any prompts being misrouted (e.g. a bug report getting the "call support" response)?
    - Are FAQ answers relevant, or is the model missing the point of the question?
 
-4. If scores are low for a particular category, go back to your flow and iterate on the prompts. Common fixes include making the classifier prompt more specific, improving the Knowledge Base aggregation prompt, or adding more detail to the agent instructions.
+4. If scores are low for a particular category, go back to your flow and iterate on the prompts. Common fixes include making the classifier prompt more specific, improving the FAQ prompt, or adding more detail to the agent instructions.
 
 ## Next Steps
 

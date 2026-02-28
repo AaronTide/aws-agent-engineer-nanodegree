@@ -1,7 +1,6 @@
-# Resources Setup
+# Tools Setup
 
-
-This section will guide how to create resources needed for this demo, including the tool that the agent will use to create bug reports and an S3 bucket that will be used later to run Bedrock evals.
+This section will guide you through creating the tool that the agent will use to create bug reports.
 
 ## Tool to create a bug report
 
@@ -11,7 +10,7 @@ The Bedrock Agent itself cannot write to DynamoDB directly. Agents interact with
 
 ## Deploy with CloudFormation
 
-All resources — are defined together in `cloudformation.yaml` at the root of the project. CloudFormation provisions them in the right order and wires them together automatically.
+All tool resources are defined in `cloudformation-tool.yaml` at the root of the project. CloudFormation provisions them in the right order and wires them together automatically.
 
 ### What the template creates
 
@@ -20,7 +19,6 @@ All resources — are defined together in `cloudformation.yaml` at the root of t
 | DynamoDB table | `BugReports` | Stores one item per bug report, keyed by `ticketId` |
 | IAM role | `create-bug-report-role` | Grants the Lambda function permission to write logs and call `PutItem` on the table |
 | Lambda function | `create-bug-report` | Receives a bug report from the Bedrock Agent and writes it to DynamoDB |
-| S3 bucket | `udacity-agentic-engineer-c1-eval-<account-id>` | Will be used later to run Bedrock evals  |
 
 The IAM role follows the principle of least privilege: it grants only `dynamodb:PutItem` on the `BugReports` table — nothing more.
 
@@ -30,18 +28,15 @@ Run the following command from the project root to create the stack:
 
 ```bash
 aws cloudformation deploy \
-  --template-file cloudformation.yaml \
-  --stack-name bug-report-stack \
+  --template-file cloudformation-tool.yaml \
+  --stack-name bug-report-tool-stack \
   --capabilities CAPABILITY_NAMED_IAM \
-  --region us-east-1 \
-  --profile bedrock-user
+  --region us-east-1
 ```
 
 The `--capabilities CAPABILITY_NAMED_IAM` flag is required because the template creates a named IAM role. CloudFormation asks you to acknowledge this explicitly as a safety check.
 
-Wait for the command to print `Successfully created/updated stack - bug-report-stack`. The three resources are now live.
-
-**Note:** Record the name of the S3 bucket created by this `deploy` command. You will need it later in this project.
+Wait for the command to print `Successfully created/updated stack - bug-report-tool-stack`. The three resources are now live.
 
 ### Understanding the Lambda code
 
