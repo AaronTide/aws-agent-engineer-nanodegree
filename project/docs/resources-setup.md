@@ -37,12 +37,11 @@ aws cloudformation deploy \
   --profile bedrock-user
 ```
 
-
-
-
 The `--capabilities CAPABILITY_NAMED_IAM` flag is required because the template creates a named IAM role. CloudFormation asks you to acknowledge this explicitly as a safety check.
 
 Wait for the command to print `Successfully created/updated stack - bug-report-stack`. The three resources are now live.
+
+**Note:** Record the name of the S3 bucket created by this `deploy` command. You will need it later in this project.
 
 ### Understanding the Lambda code
 

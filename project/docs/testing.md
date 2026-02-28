@@ -2,6 +2,16 @@
 
 Once your Bedrock Flow is built, you need to verify that it routes messages correctly and produces reasonable responses. This guide walks you through the full testing workflow: writing test prompts, preparing your flow for programmatic invocation, running the test script, and evaluating the results using Bedrock Evaluations.
 
+Bedrock Evaluations can't run a Bedrock Flow application, so instead we would have to invoke Bedrock Flow application, store its responses into a JSON file, and then upload this file to Bedrock Evaluations.
+
+### Automated Testing and Evaluation
+
+This project already includes a script that can run your application on a set of prompts. To use it, you need to:
+
+* Create test prompts
+* Run the testing script
+* Evaluate the output of your application using Bedrock Evaluations
+
 ## 1. Write Test Prompts
 
 Before you can run any automated tests, you need a set of test prompts that cover each branch of your flow. The goal is to have at least one prompt per category so you can verify that the classifier routes messages to the correct path.
@@ -18,7 +28,7 @@ cp flow-tests-template.json flow-tests.json
 
 <!-- screenshot: Bedrock Flow editor showing the Input node selected with its name visible -->
 
-3. Add at least one test entry per branch. Each entry has four fields:
+3. Add prompts you want to test your application on. Each entry has four fields:
 
 | Field | Description |
 |-------|-------------|
@@ -27,57 +37,7 @@ cp flow-tests-template.json flow-tests.json
 | `prompt` | The customer message to send to the flow. Write realistic messages that clearly belong to one category. |
 | `expected` | A description of what a good response should contain. This becomes the reference response for LLM-as-a-judge evaluation. It does not need to be an exact match — it describes the intent so the evaluator can assess whether the actual response is reasonable. |
 
-Here is an example of a complete test file:
-
-```json
-{
-  "flowInputNode": {
-    "nodeName": "FlowInputNode"
-  },
-  "tests": [
-    {
-      "id": "t1_bug_report",
-      "category": "BUG_REPORT",
-      "prompt": "Your app crashes every time I try to upload a file larger than 10MB on Firefox",
-      "expected": "Acknowledges the issue and asks for steps to reproduce or additional details"
-    },
-    {
-      "id": "t2_product_question",
-      "category": "PRODUCT_QUESTION",
-      "prompt": "What are the pillars of the Well-Architected Framework?",
-      "expected": "Lists and describes the pillars of the AWS Well-Architected Framework"
-    },
-    {
-      "id": "t3_other",
-      "category": "OTHER",
-      "prompt": "I need to update the credit card on file for my account",
-      "expected": "Politely explains this cannot be handled automatically and suggests calling the support phone number"
-    }
-  ]
-}
-```
-
-## 2. Test Manually in the Console
-
-Before running the full automated test suite, try your flow in the Bedrock console to make sure it works. This is faster than running the script and gives you immediate visual feedback on which path each message takes.
-
-### Steps
-
-1. Open your flow in the Bedrock console.
-
-2. Click **Run** (or use the test panel) and enter a customer message.
-
-<!-- screenshot: Bedrock Flow console test panel with a message entered -->
-
-3. Check that the message is routed to the correct branch. Try one message per category:
-
-- A message describing a software problem (should go to the bug report path).
-- A question about the Well-Architected Framework (should go to the Knowledge Base path).
-- A request that doesn't fit either category, like a billing change (should go to the default path).
-
-4. Verify the responses make sense: the bug report path should ask for details or confirm a ticket was created, the Knowledge Base path should return information from the PDF, and the default path should suggest calling the support number.
-
-## 3. Create a Flow Alias
+## 2. Create a Flow Alias
 
 To invoke your flow programmatically (from the test script or any application), you need a **flow alias**. An alias is a named pointer to a specific version of your flow. When you call the Bedrock API, you provide both the flow ID and an alias ID — not the flow itself. This is because Bedrock Flows supports versioning: you can publish multiple versions of a flow and use aliases to control which version gets invoked. In production, this lets you deploy updates safely by pointing an alias to a new version without changing the calling code.
 
@@ -87,7 +47,7 @@ For this project, we just need one alias that points to the latest version of th
 
 1. Open your flow in the Bedrock console.
 
-2. Make sure you have saved and prepared your flow. If you have made changes since the last save, click **Save** and then **Prepare** to create a new version.
+2. Make sure you have saved and prepared your flow. If you have made changes since the last save, click **Save** first.
 
 <!-- screenshot: Bedrock Flow editor showing Save and Prepare buttons -->
 
@@ -95,17 +55,19 @@ For this project, we just need one alias that points to the latest version of th
 
 <!-- screenshot: Aliases tab with Create alias button -->
 
-4. Give your alias a name (e.g. `latest`) and select the version you want it to point to. Select the most recently prepared version.
+4. Give your alias a name (e.g. `v1`) and select **Prepare and create a new version and associate it to this alias.**.
 
-5. Click **Create**. Note the **Alias ID** that is generated — you will need it when running the test script.
+5. Click **Create alias**.
 
-<!-- screenshot: Alias details page showing the Alias ID -->
+6. In the **Aliases** tab copy the **Alias ID** that was generated — you will need it when running the test script.
+
+<!-- screenshot: Aliases table -->
 
 6. You also need the **Flow ID**. You can find it on the flow's overview page or in the URL when viewing the flow in the console.
 
 <!-- screenshot: Flow overview page showing the Flow ID -->
 
-## 4. Set Up the Python Environment
+## 3. Set Up the Python Environment
 
 The test script (`generate-eval-dataset.py`) uses `boto3` to call the Bedrock API. Before running it, set up a Python virtual environment and install the dependencies.
 
@@ -151,7 +113,7 @@ This should print a version number without any errors.
 export AWS_PROFILE=your-profile-name
 ```
 
-## 5. Run the Test Script
+## 4. Run the Test Script
 
 The `generate-eval-dataset.py` script reads your test prompts, invokes the flow once per prompt, and writes the results to a JSONL file. Each line in the output file contains the original prompt, the flow's actual response, and your reference response — everything that Bedrock Evaluations needs to run an LLM-as-a-judge assessment.
 
@@ -168,34 +130,10 @@ python generate-eval-dataset.py \
 
 Replace `<your-flow-id>` and `<your-flow-alias-id>` with the values you noted in section 3.
 
-2. The script prints progress to the terminal as it runs. For each test, you will see the raw events from the flow and a summary line:
-
-```
-t1_bug_report: wrote eval line (category=BUG_REPORT)
-t2_product_question: wrote eval line (category=PRODUCT_QUESTION)
-t3_other: wrote eval line (category=OTHER)
-
-Wrote 3 JSONL lines to output_eval_dataset.jsonl (3 flow calls succeeded).
-```
-
-3. If you want more detail about how the flow processed each message, add the `--enable-trace` flag:
-
-```bash
-python generate-eval-dataset.py \
-  --tests-json flow-tests.json \
-  --flow-id <your-flow-id> \
-  --flow-alias-id <your-flow-alias-id> \
-  --region=us-east1 \
-  --enable-trace
-```
 
 Trace output shows which nodes were executed and in what order, which is useful for debugging when a message is routed to the wrong branch.
 
-4. When the script finishes, check the output file:
-
-```bash
-cat output_eval_dataset.jsonl
-```
+When the script finishes, check the output file:
 
 Each line is a JSON object with this structure:
 
@@ -215,67 +153,95 @@ Each line is a JSON object with this structure:
 
 If any flow call failed, the `response` field will contain an error message prefixed with `[FLOW_ERROR]`. Check the terminal output for details on what went wrong.
 
-## 6. Run Bedrock Evaluations
+## 5. Run Bedrock Evaluations
 
-Now that you have a JSONL dataset with your flow's responses alongside reference responses, you can use Bedrock Evaluations to assess quality automatically. Bedrock Evaluations supports an **LLM-as-a-judge** method: an evaluator model reads each prompt, the flow's response, and the reference response, then scores how well the flow answered.
+Now that you have a JSONL dataset with your flow's responses alongside reference responses, you can use Bedrock Evaluations to assess quality automatically. Bedrock Evaluations supports an **LLM-as-a-judge** method: an evaluator LLM reads each of the flow's response, the reference response, and then scores how well the flow answered.
 
-We use the **Bring Your Own Inference (BYOI)** approach because our responses come from a Bedrock Flow, not from a single model invocation. The JSONL file we generated in the previous step is the BYOI dataset — it already contains the flow's responses, so Bedrock Evaluations doesn't need to invoke anything. It only needs to judge the quality.
-
-### Create an S3 Bucket for the Evaluation
-
-Bedrock Evaluations reads input datasets from S3 and writes results to S3. You need an S3 bucket (or a prefix in an existing bucket) for this.
-
-1. Open the **S3** console and click **Create bucket**.
-
-<!-- screenshot: S3 console → Create bucket button -->
-
-2. Give the bucket a name (e.g. `my-flow-eval-data`). S3 bucket names must be globally unique, so you may need to add your account ID or a random suffix.
-
-3. Select the same AWS region where your Bedrock Flow is deployed.
-
-4. Leave the other settings at their defaults and click **Create bucket**.
-
-<!-- screenshot: S3 bucket creation form -->
+We use the **Bring Your Own Inference (BYOI)** approach because our responses come from a file we supply. The JSONL file we generated in the previous step is the BYOI dataset — it already contains the flow's responses, so Bedrock Evaluations doesn't need to invoke anything. It only needs to judge the quality.
 
 ### Upload the Dataset
 
-1. Open the bucket you just created.
+You first need to upload the JSONL dataset to the S3 bucket that was created by the CloudFormation stack earlier in this project.
 
-2. Click **Upload** and select the `output_eval_dataset.jsonl` file from your project directory.
+**Find the bucket name.** Run the following command to retrieve it from the stack outputs:
 
-<!-- screenshot: S3 upload page with the JSONL file selected -->
+```bash
+aws cloudformation describe-stacks \
+  --stack-name bug-report-stack \
+  --query 'Stacks[0].Outputs[?OutputKey==`EvalDatasetBucketName`].OutputValue' \
+  --output text \
+  --region us-east-1 \
+  --profile bedrock-user
+```
 
-3. Click **Upload**. Note the S3 URI of the uploaded file (e.g. `s3://my-flow-eval-data/output_eval_dataset.jsonl`) — you will need it when creating the evaluation job.
+Alternatively, open the S3 console and look for a bucket whose name starts with `udacity-agentic-engineer-c1-eval-`.
 
-<!-- screenshot: S3 showing the uploaded file with its URI -->
+**Upload the file:**
+
+```bash
+aws s3 cp output_eval_dataset.jsonl s3://<your-bucket-name>/output_eval_dataset.jsonl \
+  --region us-east-1 \
+  --profile bedrock-user
+```
+
+Note the full S3 URI (e.g. `s3://udacity-agentic-engineer-c1-eval-123456789012/output_eval_dataset.jsonl`) — you will need it when creating the evaluation job.
 
 ### Create the Evaluation Job
 
-1. In the Bedrock console, navigate to **Evaluations** in the left sidebar.
+Before running this command you need the ARN of the IAM role and the name of the S3 bucket created by the CloudFormation stack. Both are printed as stack outputs when you run `aws cloudformation deploy`. You can also find them in the AWS console: open **CloudFormation** → **Stacks** → **bug-report-stack** → **Outputs** tab. Look for `BedrockEvalRoleArn` and `EvalDatasetBucketName`.
 
-<!-- screenshot: Bedrock console sidebar showing Evaluations -->
+Run the following command to create an LLM-as-a-judge evaluation job using your uploaded dataset:
 
-2. Click **Create evaluation job**.
+```bash
+aws bedrock create-evaluation-job \
+  --job-name flow-eval-run-1 \
+  --role-arn <BedrockEvalRoleArn> \
+  --evaluation-config '{
+    "automated": {
+      "datasetMetricConfigs": [{
+        "taskType": "General",
+        "dataset": {
+          "name": "flow-eval-dataset",
+          "datasetLocation": {
+            "s3Uri": "s3://<EvalDatasetBucketName>/output_eval_dataset.jsonl"
+          }
+        },
+        "metricNames": ["Builtin.Correctness"]
+      }],
+      "evaluatorModelConfig": {
+        "bedrockEvaluatorModels": [{
+          "modelIdentifier": "amazon.nova-pro-v1:0"
+        }]
+      }
+    }
+  }' \
+  --inference-config '{
+    "models": [{
+      "precomputedInferenceSource": {
+        "inferenceSourceIdentifier": "my-flow-app"
+      }
+    }]
+  }' \
+  --output-data-config '{"s3Uri": "s3://<EvalDatasetBucketName>/results/"}' \
+  --region us-east-1 \
+  --profile bedrock-user
+```
 
-3. Give the job a name (e.g. `flow-eval-run-1`).
+Replace `<BedrockEvalRoleArn>` and `<EvalDatasetBucketName>` with the values from the CloudFormation stack outputs.
 
-4. Under evaluation type, select **LLM-as-a-judge**.
+The job may take a few minutes to complete. To check its status:
 
-5. Select the evaluator model. This is the model that will judge the quality of your flow's responses. Choose a capable model (e.g. Claude or Amazon Nova).
+```bash
+aws bedrock list-evaluation-jobs \
+  --region us-east-1 \
+  --profile bedrock-user \
+  --query 'jobSummaries[?jobName==`flow-eval-run-1`].[jobName,status]' \
+  --output table
+```
 
-<!-- screenshot: Evaluation job creation form with LLM-as-a-judge selected -->
+To view the results in the console, go to [Amazon Bedrock](https://console.aws.amazon.com/bedrock) → **Evaluations** in the left sidebar → click on your job once it shows status **Completed**.
 
-6. Under **Inference source**, select **Bring your own inference (BYOI)**.
-
-7. For the input dataset, provide the S3 URI of the JSONL file you uploaded (e.g. `s3://my-flow-eval-data/output_eval_dataset.jsonl`).
-
-8. For the output location, provide an S3 path where Bedrock should write the evaluation results (e.g. `s3://my-flow-eval-data/results/`).
-
-<!-- screenshot: Evaluation job form with BYOI selected and S3 paths filled in -->
-
-9. Click **Create** to start the evaluation job. The job may take a few minutes to complete depending on the size of your dataset.
-
-<!-- screenshot: Evaluation jobs list showing the job in progress -->
+<!-- screenshot: Evaluation jobs list showing the job completed -->
 
 ### Review the Results
 
@@ -288,7 +254,7 @@ Bedrock Evaluations reads input datasets from S3 and writes results to S3. You n
 3. Look for patterns in the scores:
    - Are all three branches producing reasonable responses?
    - Are any prompts being misrouted (e.g. a bug report getting the "call support" response)?
-   - Are Knowledge Base answers relevant, or is the KB returning unrelated passages?
+   - Are FAQ answers relevant, or is the model missing the point of the question?
 
 4. If scores are low for a particular category, go back to your flow and iterate on the prompts. Common fixes include making the classifier prompt more specific, improving the Knowledge Base aggregation prompt, or adding more detail to the agent instructions.
 

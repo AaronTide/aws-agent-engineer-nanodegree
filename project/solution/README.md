@@ -69,7 +69,7 @@ This path exists as a catch-all so the chatbot always responds, rather than fail
 
 ### Output Nodes
 
-Each path has its own Output node (`BugReportOutputNode`, `FlowOutputNode_1`, `OtherRequestsOutputNode`, `UnrelatedQuestionOutputNode`). Separate outputs are used because Bedrock Flows requires each execution path to terminate at an Output node, and a single output node cannot receive connections from multiple upstream branches.
+Each path has its own Output node (`BugReportOutputNode`, `FaqQuestionOutputNode`, `OtherRequestsOutputNode`, `UnrelatedQuestionOutputNode`). Separate outputs are used because Bedrock Flows requires each execution path to terminate at an Output node, and a single output node cannot receive connections from multiple upstream branches.
 
 ## Test Suite
 
