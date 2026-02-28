@@ -78,17 +78,13 @@ A virtual environment keeps the project's dependencies isolated from your system
 2. Create a virtual environment:
 
 ```bash
-python3 -m venv .venv
+python3 -m venv venv
 ```
 
 3. Activate it:
 
 ```bash
-# macOS / Linux
-source .venv/bin/activate
-
-# Windows
-.venv\Scripts\activate
+source venv/bin/activate
 ```
 
 4. Install the dependencies:

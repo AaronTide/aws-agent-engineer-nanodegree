@@ -47,8 +47,6 @@ def invoke_flow_once(
             last_text_any = oe.get("content", {}).get("document")
             break
 
-        # Some flows also surface agent output events separately (varies by service evolution).
-        # We'll capture anything that looks like an agent completion if present.
         if "flowMultiTurnInputRequestEvent" in event:
             ce = event["flowMultiTurnInputRequestEvent"]
             last_text_any = ce.get("content", {}).get("document")
