@@ -93,7 +93,7 @@ To test a function we need to create a test event, and call our function with it
 
 This event matches the format that Bedrock Agents use when calling a tool. The `messageVersion`, `function`, and `parameters` fields are what the Lambda handler expects, including the `sessionId` and `agent` fields that agent passes as metadata.
 
-<!-- screenshot: Lambda Test tab with the test event JSON -->
+![Creating test event](images/creating-test-event.png)
 
 3. To call the function and pass the test event click **Test**. You should see a successful response like:
 
@@ -114,11 +114,11 @@ This event matches the format that Bedrock Agents use when calling a tool. The `
 }
 ```
 
-<!-- screenshot: Lambda test execution result showing a successful response -->
+![Successful Lambda test](images/successful-lambda-test.png)
 
 4. To confirm the record was actually written, go to the **DynamoDB** console, open the `BugReports` table, and click **Explore table items**. You should see one item with the ticket ID from the response.
 
-<!-- screenshot: DynamoDB table items view showing the newly created bug report -->
+![Created DynamoDB item](images/dynamodb-item.png)
 
 ## Common failures
 

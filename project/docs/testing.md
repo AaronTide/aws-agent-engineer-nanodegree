@@ -26,7 +26,7 @@ cp flow-tests-template.json flow-tests.json
 
 2. Open `flow-tests.json` and fill in the `flowInputNode.nodeName` field. This must match the name of the Input node in your flow. To find it, open your flow in the Bedrock console and click on the Input node — the name is displayed at the top of the node panel.
 
-<!-- screenshot: Bedrock Flow editor showing the Input node selected with its name visible -->
+![Input node name](images/input-node-name.png)
 
 3. Add prompts you want to test your application on. Each entry has four fields:
 
@@ -49,11 +49,9 @@ For this project, we just need one alias that points to the latest version of th
 
 2. Make sure you have saved and prepared your flow. If you have made changes since the last save, click **Save** first.
 
-<!-- screenshot: Bedrock Flow editor showing Save and Prepare buttons -->
-
 3. Click on **Aliases** in the flow editor, then click **Create alias**.
 
-<!-- screenshot: Aliases tab with Create alias button -->
+![Create an alias](images/create-an-alias.png)
 
 4. Give your alias a name (e.g. `v1`) and select **Prepare and create a new version and associate it to this alias.**.
 
@@ -61,11 +59,11 @@ For this project, we just need one alias that points to the latest version of th
 
 6. In the **Aliases** tab copy the **Alias ID** that was generated — you will need it when running the test script.
 
-<!-- screenshot: Aliases table -->
+![Aliases table](images/aliases-table.png)
 
 6. You also need the **Flow ID**. You can find it on the flow's overview page or in the URL when viewing the flow in the console.
 
-<!-- screenshot: Flow overview page showing the Flow ID -->
+![Flow ID](images/flow-id.png)
 
 ## 3. Set Up the Python Environment
 
@@ -106,12 +104,6 @@ python -c "import boto3; print(boto3.__version__)"
 ```
 
 This should print a version number without any errors.
-
-6. Make sure your AWS credentials are configured. The script uses your default AWS credentials (from `~/.aws/credentials` or environment variables). If you have multiple profiles, you can set the `AWS_PROFILE` environment variable:
-
-```bash
-export AWS_PROFILE=your-profile-name
-```
 
 ## 4. Run the Test Script
 
