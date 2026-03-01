@@ -1,7 +1,8 @@
 # Customer Support Chatbot with Amazon Bedrock Flows
 
-In this project you will build a customer support chatbot using Amazon Bedrock Flows. The chatbot will need to handle one of the following types of messages: bug reports and platform related questions that can be answered from FAQ.
-
+In this project you will build a customer support chatbot using Amazon Bedrock Flows. The chatbot will handle customers' questions on a fictional website, and will need to handle one of the following types of messages:
+* bug reports
+* platform related questions that can be answered from FAQ.
 
 There are a number of resources that will be available to you to develop this application:
 
@@ -26,7 +27,8 @@ You would need to create a Bedrock Flow application, and then test it in various
 | `docs/tools-setup.md` | Step-by-step guide for creating the bug report tool. |
 | `docs/testing.md` | Step-by-step guide for automated testing and running Bedrock Evaluations. |
 | `solution/` | Reference solution with the complete flow definition, test prompts, and a diagram. |
-| `cloudformation.yaml` | A template for creating resources you would need for this application. |
+| `cloudformation-tool.yaml` | A template for creating a tool you would need for this application. |
+| `cloudformation-testing.yaml` | A template for creating resources to test your final application. |
 | `create_bug_report.py` | Lambda function that implements a tool that stores bug reports in DynamoDB. |
 | `generate-eval-dataset.py` | Script that runs your flow against a test suite and produces a JSONL file for Bedrock Evaluations. |
 | `flow-tests-template.json` | Template for developing your test suite. |
@@ -35,21 +37,29 @@ You would need to create a Bedrock Flow application, and then test it in various
 
 ### Step 1: Create Resources for your application
 
-First you will create a tool that your application will need to create bug reports, and an S3 bucket to run evaluations using Bedrock Flow.
+First you will deploy a tool that your application will need to create bug reports and other related resources.
 
 When a customer reports a bug, the chatbot needs to persist it somewhere so the engineering team can follow up. In this project we use a DynamoDB table as a simple ticket store, and a Lambda function as the tool that Bedrock Agents can call to create a new ticket.
 
-Follow the detailed walkthrough in [Tools Setup](docs/tools-setup.md). Follow this guide first, to ensure that you have everything you need for the rest of the project
+Follow the detailed walkthrough in [Tools Setup](docs/tools-setup.md), to ensure that you have everything you need for the rest of the project
 
 ### Step 2: Build the Bedrock Flow
 
-Now having all resources are set up, you can start developing Bedrock Flow application. Your application would need to handle three different types of requests:
+Now having a tool set up, you can start developing Bedrock Flow application. Your application would need to handle three different types of requests:
 
 - **Bug reports** - if a customer reports a bug on the web site. In this case, the application would need to collect additional information and create a ticket for the reported bug using the tool you've created in the previous step.
 - **Platform questions** - the application should answer common questions about orders, shipping, returns, and payments using an FAQ.
 - **Other requests** - in case if the question cannot be answered using FAQ and not a bug report, and application should politely redirected to a human support phone line.
 
-Platform questions (orders, shipping, returns, payments) need to be answered from your product's documentation. Here we will use the simplest approach and embed the document directly in the prompt — the model will see it at inference time and answers from it.
+The tool you've deployed accepts three parameters:
+
+* Bug description
+* Steps to reproduce
+* Environment where a user has experienced a bug
+
+Make sure that your application collects this data when creating a bug report.
+
+Platform questions (orders, shipping, returns, payments) need to be answered from the product's FAQ. Here we will use the simplest approach and embed the document directly in the prompt — the model will see it at inference time and answers from it.
 
 > **Note:** Embedding documents in the prompt works well for short, stable content like a FAQ. For large documents, embedding the full text in every prompt becomes expensive and hits context limits. The standard solution is **Retrieval-Augmented Generation (RAG)**, which retrieves only the relevant passages at query time using a vector index. RAG with Amazon Bedrock Knowledge Bases is covered in a later course.
 
@@ -76,8 +86,6 @@ To test your application you will do the following:
 * Use Bedrock Evaluations to evaluate your application's outputs
 
 You need to follow the steps in the [Testing and Evaluation](docs/testing.md) document to run automated tests and evaluate your flow.
-
-
 
 ## Built With
 
