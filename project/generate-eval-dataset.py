@@ -84,7 +84,6 @@ def main():
     with out_path.open("w", encoding="utf-8") as f:
         for t in tests:
             test_id = t["id"]
-            category = t.get("category", "")
             reference = t.get("expected", "")
             prompt = t.get("prompt", {})
 
@@ -108,7 +107,6 @@ def main():
             record = {
                 "prompt": prompt,
                 "referenceResponse": reference,
-                "category": category,
                 "modelResponses": [
                     {
                         "response": response_text,
@@ -121,7 +119,7 @@ def main():
 
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
-            print(f"{test_id}: wrote eval line (category={category})", file=sys.stderr)
+            print(f"{test_id}: wrote eval line", file=sys.stderr)
 
     print(f"\nWrote {len(tests)} JSONL lines to {out_path} ({n_ok} flow calls succeeded).", file=sys.stderr)
 

@@ -1,14 +1,16 @@
 # Testing and Evaluation
 
-Once your Bedrock Flow is built, you need to verify that it routes messages correctly and produces reasonable responses. This guide walks you through the full testing workflow: writing test prompts, preparing your flow for programmatic invocation, running the test script, and evaluating the results using Bedrock Evaluations.
+Once your Bedrock Flow is built, you need to verify that it handles different messages correctly and produces expected responses. This guide walks you through the full testing workflow: writing test prompts, preparing your flow for programmatic invocation, running the test script, and evaluating the results using Bedrock Evaluations.
 
-Bedrock Evaluations can't run a Bedrock Flow application, so instead we would have to invoke Bedrock Flow application, store its responses into a JSON file, and then upload this file to Bedrock Evaluations.
+Bedrock Evaluations can't run a Bedrock Flow application, so instead we would have to invoke Bedrock Flow application, store its responses into a JSONL file, and then upload this file to Bedrock Evaluations.
+
+Note: a JSONL is a file format where every line represents a separate JSON document. This is in contrast to a JSON file, where the whole file represents a single JSON document.
 
 ### Automated Testing and Evaluation
 
 This project already includes a script that can run your application on a set of prompts. To use it, you need to:
 
-* Create test prompts
+* Create a list test prompts in a separate file
 * Run the testing script
 * Evaluate the output of your application using Bedrock Evaluations
 
@@ -33,7 +35,6 @@ cp flow-tests-template.json flow-tests.json
 | Field | Description |
 |-------|-------------|
 | `id` | A unique identifier for the test (e.g. `t1_bug_report`). Used in log output to identify which test is running. |
-| `category` | The expected classification. This is not used by the flow itself — it is written into the evaluation dataset so you can analyze results by category. |
 | `prompt` | The customer message to send to the flow. Write realistic messages that clearly belong to one category. |
 | `expected` | A description of what a good response should contain. This becomes the reference response for LLM-as-a-judge evaluation. It does not need to be an exact match — it describes the intent so the evaluator can assess whether the actual response is reasonable. |
 
@@ -66,6 +67,8 @@ For this project, we just need one alias that points to the latest version of th
 ![Flow ID](images/flow-id.png)
 
 ## 3. Set Up the Python Environment
+
+**TODO:** Rewrite once we have an actual environment set up in Udacity env.
 
 The test script (`generate-eval-dataset.py`) uses `boto3` to call the Bedrock API. Before running it, set up a Python virtual environment and install the dependencies.
 
@@ -129,7 +132,6 @@ Each line is a JSON object with this structure:
 {
   "prompt": "Your app crashes every time I try to upload a file...",
   "referenceResponse": "Acknowledges the issue and asks for steps to reproduce...",
-  "category": "BUG_REPORT",
   "modelResponses": [
     {
       "response": "I'm sorry to hear about the crash. Could you tell me...",
@@ -183,7 +185,7 @@ You first need to upload the JSONL dataset to the S3 bucket created in the previ
 
 ```bash
 aws s3 cp output_eval_dataset.jsonl s3://<your-bucket-name>/output_eval_dataset.jsonl \
-  --region us-east-1 
+  --region us-east-1
 ```
 
 Note the full S3 URI (e.g. `s3://udacity-agentic-engineer-c1-eval-123456789012/output_eval_dataset.jsonl`) — you will need it when creating the evaluation job.
@@ -191,6 +193,8 @@ Note the full S3 URI (e.g. `s3://udacity-agentic-engineer-c1-eval-123456789012/o
 ### Create the Evaluation Job
 
 Use the `BedrockEvalRoleArn` and `EvalDatasetBucketName` values from the `bug-report-testing-stack` outputs you retrieved in step 5.
+
+The command below creates an evaluation job that reads your JSONL file from S3, scores each response using `Builtin.Correctness` — a metric that asks the evaluator model how well the actual response matches the reference — and writes the results back to S3. `--role-arn` is the IAM role Bedrock assumes to read from and write to your bucket. `--inference-config` with `precomputedInferenceSource` tells Bedrock that the responses are already in the file and it does not need to invoke any model to generate them. `--output-data-config` is where the per-record scores will be written once the job completes.
 
 Run the following command to create an LLM-as-a-judge evaluation job using your uploaded dataset:
 
@@ -244,6 +248,7 @@ To view the results in the console, go to [Amazon Bedrock](https://console.aws.a
    - Are all three branches producing reasonable responses?
    - Are any prompts being misrouted (e.g. a bug report getting the "call support" response)?
    - Are FAQ answers relevant, or is the model missing the point of the question?
+   - Does your application return a correct response, but the LLM-as-a-judge model is marking it as incorrect?
 
 4. If scores are low for a particular category, go back to your flow and iterate on the prompts. Common fixes include making the classifier prompt more specific, improving the FAQ prompt, or adding more detail to the agent instructions.
 
