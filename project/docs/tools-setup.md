@@ -4,7 +4,7 @@ This section will guide you through creating the tool that the agent will use to
 
 ## Tool to create a bug report
 
-When a customer reports a bug, the chatbot needs to persist it somewhere so the engineering team can track and follow up on it. A simple way to do this is to store each bug report as a record in a database. In this project we use DynamoDB as our database of choice, but we could have used any other datastore.
+When a customer reports a bug, your chatbot needs to persist it somewhere so the engineering team can track and follow up on it. A simple way to do this is to store each bug report as a record in a database. In this project we use DynamoDB as our database of choice, but we could have used any other datastore.
 
 The Bedrock Agent itself cannot write to DynamoDB directly. Agents interact with external systems through *tools* — functions that the agent can invoke during a conversation. AWS Lambda is the standard way to implement these tools: you write a  function, and the agent calls it with structured parameters. The Lambda function then does the actual work (in our case, writing to DynamoDB).
 
@@ -40,25 +40,23 @@ Wait for the command to print `Successfully created/updated stack - bug-report-t
 
 ### Understanding the Lambda code
 
-The Lambda handler is defined in `create_bug_report.py` and embedded in the template. Here is what it does:
+The Lambda handler is defined in `create_bug_report.py` and embedded in the template. It validates the incoming Bedrock Agent event, writes the bug report to DynamoDB with a generated ticket ID, and returns the ticket ID and status back to the agent.
 
-- **Validates the request.** It checks that the incoming event has `messageVersion: "1.0"` and `function: "create_bug_report"`. This is the format that Bedrock Agents use when calling a tool. If the event doesn't match, the function returns an error.
+The function expects the following parameters:
 
-- **Extracts parameters.** The agent sends parameters as a list of `{name, value}` objects. The function extracts `description`, `stepsToReproduce`, and `environment` from this list.
-
-- **Generates a ticket ID.** Each bug report gets a unique UUID so it can be referenced later.
-
-- **Writes to DynamoDB.** The function stores the ticket with a status of `OPEN` and a creation timestamp.
-
-- **Returns a response.** The function returns the ticket ID and status (`OPEN`) in the format that Bedrock Agents expect. The agent then uses this information to confirm the ticket with the customer.
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `description` | string | yes | Description of the bug |
+| `stepsToReproduce` | string | no | Steps to follow to reproduce the issue |
+| `environment` | string | no | User's environment (browser, OS, device) |
 
 ## Test the Lambda Function
 
-At this stage you should have a Lambda function that should be able to create new tickets. In theory now it can be used by your agent, but to make sure that everything was set up correctly, you can test this function in isolation. We can call our function from the AWS console and check if it works correctly and if it can create new tickets in DynamodDB.
+At this stage you should have a Lambda function that should be able to create new tickets. In theory now it can be used by your agent, but to make sure that everything was set up correctly, you can test this function in isolation. We can call our function from the AWS console and check if it works correctly and if it can create new tickets in DynamoDB.
 
 ### Steps
 
-To test a function we need to create a test event, and call our function with it.
+You can test the created tool in isolation by invoking it with an event similar to what a Bedrock agent will send. To test a function we need to create a test event, and call our function with it.
 
 1. In the Lambda console, open the `create-bug-report` function and go to the **Test** tab.
 
@@ -91,7 +89,7 @@ To test a function we need to create a test event, and call our function with it
 }
 ```
 
-This event matches the format that Bedrock Agents use when calling a tool. The `messageVersion`, `function`, and `parameters` fields are what the Lambda handler expects, including the `sessionId` and `agent` fields that agent passes as metadata.
+This event matches the format that Bedrock Agents use when calling a tool. The `messageVersion`, `function`, and `parameters` fields are what the Lambda handler expects.
 
 ![Creating test event](images/creating-test-event.png)
 
