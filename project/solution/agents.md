@@ -38,9 +38,15 @@ Output JSON schema (when all fields are collected or after 5 turns):
 
 When outputting JSON, output nothing else.
 ```
+### Multi-Turn Conversations
+
+**bug-report-agent** has **User Input** enabled (under Advanced Settings). This allows the agent to pause execution and ask the user a follow-up question before continuing, rather than completing in a single pass. This is what makes the bug report path conversational: the agent can ask for missing fields (steps to reproduce, environment) across multiple turns before handing off to the BugReportCreator.
+
+Without User Input enabled, the agent would have to produce its full response in a single turn and could not wait for the customer's reply.
+
 ### Action Groups
 
-This agent uses only the built-in `AMAZON.UserInput` action, which allows it to ask the customer follow-up questions. It has no custom Lambda tools — its sole job is information gathering, not persistence.
+This agent has no action groups.
 
 ## Agent 2: create-bug-report (BugReportCreator)
 

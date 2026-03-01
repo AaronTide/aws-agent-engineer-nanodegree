@@ -183,8 +183,7 @@ You first need to upload the JSONL dataset to the S3 bucket created in the previ
 
 ```bash
 aws s3 cp output_eval_dataset.jsonl s3://<your-bucket-name>/output_eval_dataset.jsonl \
-  --region us-east-1 \
-  --profile bedrock-user
+  --region us-east-1 
 ```
 
 Note the full S3 URI (e.g. `s3://udacity-agentic-engineer-c1-eval-123456789012/output_eval_dataset.jsonl`) — you will need it when creating the evaluation job.
