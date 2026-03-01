@@ -254,4 +254,4 @@ To view the results in the console, go to [Amazon Bedrock](https://console.aws.a
 
 ## Next Steps
 
-If you want to expand your test suite, add more test entries to `flow-tests.json` and re-run the script. Edge cases are particularly valuable — try ambiguous messages that could fall into multiple categories, very short messages, or messages in unusual formats. Then re-run the evaluation to see if your changes improved the scores.
+If you want to expand your test suite, add more test entries to `flow-tests.json` and re-run the script. Try to improve your application to make sure that it reliably responds to most common use-cases.
