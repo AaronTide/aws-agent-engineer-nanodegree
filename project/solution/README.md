@@ -23,7 +23,7 @@ The flow starts with two nodes that work together: `InputPrompt` classifies the 
 
 `InputPrompt` sends the customer message to a model with a tightly constrained prompt that asks for exactly one of four labels: `BUG_REPORT`, `PLATFORM_QUESTION`, `OTHER_RELATED`, or `UNRELATED`. The constraint matters because the `InputClassifier` node downstream uses exact string matching — `conditionInput == "BUG_REPORT"` — and any variation in the output (extra punctuation, lowercase, a sentence instead of a word) will cause the condition to miss and fall through to `default`. Keeping the prompt constrained makes the classifier reliable.
 
-**Note:** This is where in practice you could use structured output to ensure that your model returns an output in a predetermined format. You will learn about structured output in the upcoming courses.
+**Note:** This is where in practice you could use structured output to ensure that your model returns an output in a predetermined format. Structured output is outside the scope of this course.
 
 `InputClassifier` then routes execution to one of four paths based on that label.
 
@@ -41,7 +41,7 @@ See [agents.md](agents.md) for the full instructions for both agents.
 
 When the classifier returns `PLATFORM_QUESTION`, the message goes to `FaqQuestion`, a Prompt node that has the full FAQ document embedded directly in its prompt template. The model reads the customer's question, scans the FAQ, and writes a helpful answer. If the FAQ doesn't cover the question, the prompt instructs the model to suggest calling the support phone number rather than guessing.
 
-Embedding the FAQ directly in the prompt is the simplest approach and works well for short, stable content. The downside is that the entire document is sent to the model on every request, which becomes expensive and hits context limits for larger documents. The standard solution for larger document sets is **Retrieval-Augmented Generation (RAG)**, which retrieves only the relevant passages at query time using a vector index. RAG with Amazon Bedrock Knowledge Bases is covered in a later course.
+Embedding the FAQ directly in the prompt is the simplest approach and works well for short, stable content. The downside is that the entire document is sent to the model on every request, which becomes expensive and hits context limits for larger documents. The standard solution for larger document sets is **Retrieval-Augmented Generation (RAG)**, which retrieves only the relevant passages at query time using a vector index. RAG with Amazon Bedrock Knowledge Bases is outside the scope of this course.
 
 ### Path 3: Other Requests
 

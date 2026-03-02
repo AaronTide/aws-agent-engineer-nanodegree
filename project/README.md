@@ -61,7 +61,7 @@ Make sure that your application collects this data when creating a bug report.
 
 Platform questions (orders, shipping, returns, payments) need to be answered from the product's FAQ. Here we will use the simplest approach and embed the document directly in the prompt — the model will see it at inference time and answers from it.
 
-> **Note:** Embedding documents in the prompt works well for short, stable content like a FAQ. For large documents, embedding the full text in every prompt becomes expensive and hits context limits. The standard solution is **Retrieval-Augmented Generation (RAG)**, which retrieves only the relevant passages at query time using a vector index. RAG with Amazon Bedrock Knowledge Bases is covered in a later course.
+> **Note:** Embedding documents in the prompt works well for short, stable content like a FAQ. For large documents, embedding the full text in every prompt becomes expensive and hits context limits. The standard solution is **Retrieval-Augmented Generation (RAG)**, which retrieves only the relevant passages at query time using a vector index. RAG with Amazon Bedrock Knowledge Bases is outside the scope of this course.
 
 #### Some suggestions
 
