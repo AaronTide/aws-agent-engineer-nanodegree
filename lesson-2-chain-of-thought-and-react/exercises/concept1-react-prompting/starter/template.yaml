@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda functions for the restaurant recommendation agent exercise
+
+Resources:
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: restaurant-agent-lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  SearchRestaurantsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: search-restaurants
+      Runtime: python3.12
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          import json
+
+          MOCK_RESTAURANTS = {
+              "seattle": {
+                  "italian": [
+                      {"name": "Trattoria Bella", "cuisine": "Italian", "price_range": "moderate", "rating": 4.6, "address": "142 Pike St, Seattle, WA"},
+                      {"name": "Osteria Romana", "cuisine": "Italian", "price_range": "moderate", "rating": 4.4, "address": "88 Capitol Hill Ave, Seattle, WA"},
+                      {"name": "Pasta Express", "cuisine": "Italian", "price_range": "budget", "rating": 4.1, "address": "210 2nd Ave, Seattle, WA"},
+                  ],
+                  "japanese": [
+                      {"name": "Sakura Garden", "cuisine": "Japanese", "price_range": "moderate", "rating": 4.7, "address": "55 Westlake Ave, Seattle, WA"},
+                  ],
+              },
+          }
+
+          def lambda_handler(event, context):
+              parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
+              city = parameters.get("city", "").lower()
+              cuisine = parameters.get("cuisine", "").lower()
+
+              restaurants = MOCK_RESTAURANTS.get(city, {}).get(cuisine, [])
+              if not restaurants:
+                  restaurants = [{"message": f"No {cuisine} restaurants found in {city.title()}."}]
+
+              result = {"city": city.title(), "cuisine": cuisine.title(), "restaurants": restaurants}
+
+              return {
+                  "messageVersion": "1.0",
+                  "response": {
+                      "actionGroup": event["actionGroup"],
+                      "function": event["function"],
+                      "functionResponse": {"responseBody": {"TEXT": {"body": json.dumps(result)}}},
+                  },
+              }
+
+  SearchRestaurantsPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SearchRestaurantsFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+
+  GetAvailabilityFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: get-availability
+      Runtime: python3.12
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          import json
+
+          MOCK_AVAILABILITY = {
+              "trattoria bella": {"available": True, "next_slot": "7:30 PM"},
+              "osteria romana": {"available": False, "next_slot": "9:00 PM"},
+              "pasta express": {"available": True, "next_slot": "6:00 PM"},
+              "sakura garden": {"available": True, "next_slot": "7:00 PM"},
+          }
+
+          def lambda_handler(event, context):
+              parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
+              restaurant_name = parameters.get("restaurant_name", "")
+              date = parameters.get("date", "")
+
+              availability = MOCK_AVAILABILITY.get(restaurant_name.lower(), {"available": True})
+
+              result = {
+                  "restaurant_name": restaurant_name,
+                  "date": date,
+                  "available": availability["available"],
+                  "message": (
+                      f"{restaurant_name} is available on {date}."
+                      if availability["available"]
+                      else f"{restaurant_name} is fully booked on {date}."
+                  ),
+              }
+
+              return {
+                  "messageVersion": "1.0",
+                  "response": {
+                      "actionGroup": event["actionGroup"],
+                      "function": event["function"],
+                      "functionResponse": {"responseBody": {"TEXT": {"body": json.dumps(result)}}},
+                  },
+              }
+
+  GetAvailabilityPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt GetAvailabilityFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+
+Outputs:
+  SearchRestaurantsFunctionArn:
+    Description: ARN of the search-restaurants Lambda function
+    Value: !GetAtt SearchRestaurantsFunction.Arn
+
+  GetAvailabilityFunctionArn:
+    Description: ARN of the get-availability Lambda function
+    Value: !GetAtt GetAvailabilityFunction.Arn
