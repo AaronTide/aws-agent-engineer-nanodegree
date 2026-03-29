@@ -18,17 +18,9 @@ Do not add information that is not present in the notes. If something is ambiguo
 
 ---
 
-## Model and Parameters
-
-- **Model:** Claude 3 Sonnet (or any capable text model available in your Bedrock region)
-- **Temperature:** 0 — minimizes variation across runs, which is appropriate for documentation where consistency matters more than creativity
-- **Other parameters:** defaults
-
----
-
 ## Why This Prompt Works
 
 - The role ("senior technical documentation specialist embedded with the team") signals both expertise level and context — the model writes as an insider, not an external narrator.
 - The explicit output format removes ambiguity about structure. Without it, the model may produce flowing prose or inconsistent headings.
-- "Do not add information that is not present in the notes" prevents hallucination of implementation details.
+- "Do not add information that is not present in the notes" reduces hallucination of implementation details.
 - The word limit keeps the output usable without requiring further editing.
