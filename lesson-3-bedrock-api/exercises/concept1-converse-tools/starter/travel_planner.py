@@ -3,9 +3,7 @@ import boto3
 # ---------------------------------------------------------------------------
 # Setup
 # ---------------------------------------------------------------------------
-
-# TODO (Task 1): Create the Bedrock Runtime client
-# bedrock = boto3.client(...)
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
 
@@ -155,17 +153,26 @@ def run_chat() -> None:
             break
 
         elif stop_reason == "tool_use":
-            # TODO (Task 5): Handle tool calls.
-            # 1. Create an empty tool_results list
-            # 2. Loop through output_message["content"]
-            # 3. For each block with a "toolUse" key:
-            #    a. Extract tool_name, tool_input, and tool_use_id
-            #    b. Print: f"  [tool call] {tool_name}({tool_input})"
-            #    c. Call execute_tool(tool_name, tool_input) and store the result
-            #    d. Print: f"  [tool result] {result}"
-            #    e. Append a toolResult entry to tool_results
-            # 4. Append a user message containing tool_results to messages
-            pass
+            tool_results = []
+
+            for block in output_message["content"]:
+                if "toolUse" in block:
+                    tool_name = block["toolUse"]["name"]
+                    tool_input = block["toolUse"]["input"]
+                    tool_use_id = block["toolUse"]["toolUseId"]
+
+                    print(f"  [tool call] {tool_name}({tool_input})")
+                    result = execute_tool(tool_name, tool_input)
+                    print(f"  [tool result] {result}")
+
+                    tool_results.append({
+                        "toolResult": {
+                            "toolUseId": tool_use_id,
+                            "content": [{"json": result}],
+                        }
+                    })
+
+            messages.append({"role": "user", "content": tool_results})
 
 
 if __name__ == "__main__":

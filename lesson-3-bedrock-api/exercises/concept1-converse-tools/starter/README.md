@@ -22,17 +22,7 @@ A Python script (`travel_planner.py`) that:
 
 ## Tasks
 
-### Task 1 – Create the Bedrock Runtime Client
-
-The script already imports boto3 and defines `MODEL_ID`. Instantiate the Bedrock Runtime client:
-
-```python
-bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
-```
-
----
-
-### Task 2 – Write the System Prompt
+### Task 1 – Write the System Prompt
 
 Write a `SYSTEM_PROMPT` that instructs the assistant to:
 
@@ -42,7 +32,7 @@ Write a `SYSTEM_PROMPT` that instructs the assistant to:
 
 ---
 
-### Task 3 – Complete the Tool Schemas
+### Task 2 – Complete the Tool Schemas
 
 Fill in the `properties` and `required` fields for both tools:
 
@@ -61,30 +51,13 @@ Fill in the `properties` and `required` fields for both tools:
 
 ---
 
-### Task 4 – Implement the Tool Functions
+### Task 3 – Implement the Tool Functions
 
 Complete `get_weather` and `get_top_attractions`:
 
 - `get_weather(city, date)` — look up `(city.lower(), date)` in `WEATHER_DATA`. Return the matching dict, or `{"city": city, "date": date, "condition": "No data available"}` if not found.
 - `get_top_attractions(city)` — look up `city.lower()` in `ATTRACTIONS_DATA`. Return the matching dict, or `{"city": city, "attractions": []}` if not found.
 
----
-
-### Task 5 – Handle Tool Calls in the Converse Loop
-
-The `run_chat` function has a working skeleton. Find the `tool_use` branch and complete it:
-
-1. Create an empty `tool_results` list
-2. Loop through `output_message["content"]`
-3. For each block containing a `"toolUse"` key:
-   - Extract `tool_name`, `tool_input`, and `tool_use_id`
-   - Print `[tool call] {tool_name}({tool_input})`
-   - Call `execute_tool(tool_name, tool_input)` and store the result
-   - Print `[tool result] {result}`
-   - Append a `toolResult` entry to `tool_results`
-4. Append a user message containing `tool_results` to `messages`
-
----
 
 ## Running the Script
 

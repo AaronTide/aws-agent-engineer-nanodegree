@@ -78,40 +78,6 @@ def get_top_attractions(city: str) -> dict:
 
 ---
 
-## Converse Loop
-
-The model typically calls both tools in sequence before producing its final answer. The inner `while True` loop keeps running until `stop_reason == "end_turn"`, at which point we print the response and break.
-
-```python
-if stop_reason == "end_turn":
-    for block in output_message["content"]:
-        if "text" in block:
-            print(f"\nAssistant: {block['text']}\n")
-    break
-
-elif stop_reason == "tool_use":
-    tool_results = []
-    for block in output_message["content"]:
-        if "toolUse" in block:
-            tool_name = block["toolUse"]["name"]
-            tool_input = block["toolUse"]["input"]
-            tool_use_id = block["toolUse"]["toolUseId"]
-
-            print(f"  [tool call] {tool_name}({tool_input})")
-            result = execute_tool(tool_name, tool_input)
-            print(f"  [tool result] {result}")
-
-            tool_results.append({
-                "toolResult": {
-                    "toolUseId": tool_use_id,
-                    "content": [{"json": result}],
-                }
-            })
-    messages.append({"role": "user", "content": tool_results})
-```
-
----
-
 ## Sample Session
 
 ```

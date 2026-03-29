@@ -1,16 +1,16 @@
 import json
 
 
-MOCK_RESTAURANTS = {
-    "italian": [
-        {"name": "Trattoria Bella", "cuisine": "Italian", "price_range": "moderate", "rating": 4.6, "address": "142 Pike St, Seattle, WA"},
-        {"name": "Osteria Romana", "cuisine": "Italian", "price_range": "moderate", "rating": 4.4, "address": "88 Capitol Hill Ave, Seattle, WA"},
-        {"name": "Pasta Express", "cuisine": "Italian", "price_range": "budget", "rating": 4.1, "address": "210 2nd Ave, Seattle, WA"},
-    ],
-    "japanese": [
-        {"name": "Sakura Garden", "cuisine": "Japanese", "price_range": "moderate", "rating": 4.7, "address": "55 Westlake Ave, Seattle, WA"},
-    ],
-}
+RESTAURANTS = [
+    {"id": "r1", "name": "Trattoria Bella", "cuisine": "Italian",  "rating": 4.6},
+    {"id": "r2", "name": "Osteria Romana",  "cuisine": "Italian",  "rating": 4.4},
+    {"id": "r3", "name": "Sakura Garden",   "cuisine": "Japanese", "rating": 4.7},
+    {"id": "r4", "name": "Ramen Yuki",      "cuisine": "Japanese", "rating": 4.9},
+    {"id": "r5", "name": "El Mercado",      "cuisine": "Mexican",  "rating": 4.3},
+    {"id": "r6", "name": "Spice Route",     "cuisine": "Indian",   "rating": 4.6},
+    {"id": "r7", "name": "Le Bistro",       "cuisine": "French",   "rating": 4.8},
+    {"id": "r8", "name": "The Grill House", "cuisine": "American", "rating": 4.2},
+]
 
 
 def lambda_handler(event, context):
@@ -18,16 +18,13 @@ def lambda_handler(event, context):
     cuisine = parameters.get("cuisine", "").lower()
 
     if cuisine:
-        restaurants = MOCK_RESTAURANTS.get(cuisine, [])
+        restaurants = [r for r in RESTAURANTS if r["cuisine"].lower() == cuisine]
         if not restaurants:
-            restaurants = [{"message": f"No {cuisine.title()} restaurants found."}]
+            result = {"error": f"No {cuisine.title()} restaurants found."}
+        else:
+            result = {"restaurants": restaurants}
     else:
-        restaurants = [r for items in MOCK_RESTAURANTS.values() for r in items]
-
-    result = {
-        "cuisine": cuisine.title() if cuisine else "All",
-        "restaurants": restaurants,
-    }
+        result = {"restaurants": RESTAURANTS}
 
     return {
         "messageVersion": "1.0",

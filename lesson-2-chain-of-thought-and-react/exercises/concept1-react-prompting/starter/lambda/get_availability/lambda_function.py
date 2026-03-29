@@ -1,30 +1,26 @@
 import json
 
 
-MOCK_AVAILABILITY = {
-    "trattoria bella": {"available": True},
-    "osteria romana": {"available": False},
-    "pasta express": {"available": True},
-    "sakura garden": {"available": True},
+AVAILABILITY = {
+    "r1": True,
+    "r2": False,
+    "r3": True,
+    "r4": False,
+    "r5": True,
+    "r6": True,
+    "r7": False,
+    "r8": True,
 }
 
 
 def lambda_handler(event, context):
     parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
-    restaurant_name = parameters.get("restaurant_name", "")
-    date = parameters.get("date", "")
+    restaurant_id = parameters.get("restaurant_id", "")
 
-    availability = MOCK_AVAILABILITY.get(restaurant_name.lower(), {"available": True})
-
+    available = AVAILABILITY.get(restaurant_id, False)
     result = {
-        "restaurant_name": restaurant_name,
-        "date": date,
-        "available": availability["available"],
-        "message": (
-            f"{restaurant_name} is available on {date}."
-            if availability["available"]
-            else f"{restaurant_name} is fully booked on {date}."
-        ),
+        "restaurant_id": restaurant_id,
+        "available": available,
     }
 
     return {

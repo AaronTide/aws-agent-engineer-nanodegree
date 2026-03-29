@@ -14,17 +14,8 @@ RESTAURANTS = [
 
 
 def lambda_handler(event, context):
-    parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
-    cuisine = parameters.get("cuisine", "").lower()
-
-    if cuisine:
-        restaurants = [r for r in RESTAURANTS if r["cuisine"].lower() == cuisine]
-        if not restaurants:
-            result = {"error": f"No {cuisine.title()} restaurants found."}
-        else:
-            result = {"restaurants": restaurants}
-    else:
-        result = {"restaurants": RESTAURANTS}
+    cuisines = sorted(set(r["cuisine"] for r in RESTAURANTS))
+    result = {"cuisines": cuisines}
 
     return {
         "messageVersion": "1.0",
