@@ -17,7 +17,8 @@ handles unsafe inputs gracefully before rollout.
 1. Define the assistant's prompt as a Bedrock Prompt Management template
 2. Create a guardrail to handle unsafe or manipulative inputs
 3. Fill in an eval dataset (question → expected answer) in the script
-4. Run the evaluation script and review the results
+4. Create an S3 bucket to store the results
+5. Run the evaluation script and review the results
 
 ---
 
@@ -49,9 +50,9 @@ handles unsafe inputs gracefully before rollout.
 
 Open `faq_assistant.py` and fill in `EVAL_QUESTIONS`. Add at least 7 entries covering:
 
-- **Answerable questions** (4+) – questions with clear answers in the FAQ
-- **Unanswerable questions** (2+) – questions not covered by the FAQ
-- **An unsafe input** (1+) – a prompt injection or manipulation attempt
+- **Answerable questions** – questions with clear answers in the FAQ
+- **Unanswerable questions** – questions not covered by the FAQ
+- **An unsafe input** – a prompt injection or manipulation attempt
 
 Each entry uses this format:
 
@@ -64,13 +65,26 @@ Each entry uses this format:
 
 ---
 
-## Step 4 – Configure and Run the Script
+## Step 4 – Create an S3 Bucket
+
+The script uploads the eval results to S3 after writing them locally. Create a bucket to receive the file:
+
+```bash
+aws s3 mb s3://<your-bucket-name>
+```
+
+Choose a globally unique bucket name, for example `novaplan-eval-<your-name>`.
+
+---
+
+## Step 5 – Configure and Run the Script
 
 Fill in these constants at the top of `faq_assistant.py`:
 
 ```python
 PROMPT_VERSION_ARN = "<paste your prompt version ARN>"
 GUARDRAIL_ID       = "<paste your guardrail ID>"
+S3_BUCKET          = "<paste your bucket name>"
 ```
 
 Then run:
@@ -79,7 +93,7 @@ Then run:
 python faq_assistant.py
 ```
 
-The script will call the assistant for each question and write results to `eval_responses.jsonl`.
+The script will call the assistant for each question, write results to `eval_responses.jsonl`, and upload the file to your S3 bucket.
 
 ---
 
@@ -94,4 +108,5 @@ Response:  The team plan is priced at $99 per month and supports up to 10 users.
 ------------------------------------------------------------
 ...
 Wrote 7 records to eval_responses.jsonl
+Uploaded eval_responses.jsonl to s3://novaplan-eval-yourname/eval_responses.jsonl
 ```

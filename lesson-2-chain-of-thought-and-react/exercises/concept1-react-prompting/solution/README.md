@@ -12,32 +12,36 @@ You are a helpful restaurant recommendation assistant. When a user asks for a re
 
 Action group name: `restaurant-tools`
 
+### `get_cuisines`
+
+Returns the list of cuisine types available. Takes no parameters.
+
 ### `search_restaurants`
 
-| Parameter | Type   | Required | Description                                          |
-|-----------|--------|----------|------------------------------------------------------|
-| `cuisine` | string | No       | The cuisine type (e.g. Italian, Japanese). If omitted, all restaurants are returned. |
+| Parameter | Type   | Required | Description                                                              |
+|-----------|--------|----------|--------------------------------------------------------------------------|
+| `cuisine` | string | No       | The cuisine type (e.g. Italian, Japanese). If omitted, all are returned. |
 
 ### `get_availability`
 
-| Parameter         | Type   | Description                   |
-|-------------------|--------|-------------------------------|
-| `restaurant_name` | string | The name of the restaurant    |
-| `date`            | string | The date in YYYY-MM-DD format |
+| Parameter       | Type   | Required | Description                     |
+|-----------------|--------|----------|---------------------------------|
+| `restaurant_id` | string | Yes      | The unique ID of the restaurant |
 
 ---
 
 ## Test Prompt
 
 ```
-Find me a moderately priced Italian restaurant for tonight.
+Find me an Italian restaurant for tonight.
 ```
 
 ---
 
 ## Expected Agent Behavior
 
-1. The agent calls `search_restaurants` with `cuisine=Italian`
-2. The agent picks the top result (`Trattoria Bella`) and calls `get_availability`
-3. `Trattoria Bella` has availability — the agent presents it as the recommendation
-4. If the agent tries `Osteria Romana` instead, it will find no availability and fall back to the next option
+1. The agent calls `get_cuisines` to discover available cuisine types
+2. The agent calls `search_restaurants` with `cuisine=Italian` and receives `Trattoria Bella` (r1) and `Osteria Romana` (r2)
+3. The agent calls `get_availability` with `restaurant_id=r1` — `Trattoria Bella` has availability
+4. The agent presents `Trattoria Bella` as the recommendation
+5. If the agent tries `Osteria Romana` (r2) first, it will find no availability and fall back to `Trattoria Bella`

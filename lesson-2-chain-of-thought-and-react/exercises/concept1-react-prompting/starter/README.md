@@ -8,7 +8,11 @@ In this exercise you will build a restaurant recommendation agent using Amazon B
 
 ## Step 1 – Deploy the Lambda Functions
 
-A CloudFormation template is provided in this folder to created functions for your agent. It creates two Lambda functions and grants Bedrock permission to invoke them.
+A CloudFormation template is provided in this folder to create functions for your agent. It creates three Lambda functions and grants Bedrock permission to invoke them:
+
+- **get-cuisines** – returns the list of cuisine types available
+- **search-restaurants** – returns restaurants, optionally filtered by cuisine
+- **get-availability** – checks whether a specific restaurant has availability tonight
 
 You would need to run the following command
 
@@ -34,26 +38,31 @@ aws cloudformation deploy \
 
 ## Step 3 – Create the Action Group
 
-In your agent, create an action group named `restaurant-tools` with two functions:
+In your agent, create an action group named `restaurant-tools` with three functions:
+
+### `get_cuisines`
+
+Returns the list of cuisine types available. Takes no parameters.
+
+Connect this function to the `get-cuisines` Lambda (ARN from the CloudFormation outputs).
 
 ### `search_restaurants`
 
-Searches for restaurants matching the user's preferences. Returns all restaurants if no cuisine is specified.
+Searches for restaurants. Returns all restaurants if no cuisine is specified.
 
-| Parameter | Type   | Required | Description                                          |
-|-----------|--------|----------|------------------------------------------------------|
-| `cuisine` | string | No       | The cuisine type (e.g. Italian, Japanese). If omitted, all restaurants are returned. |
+| Parameter | Type   | Required | Description                                                              |
+|-----------|--------|----------|--------------------------------------------------------------------------|
+| `cuisine` | string | No       | The cuisine type (e.g. Italian, Japanese). If omitted, all are returned. |
 
 Connect this function to the `search-restaurants` Lambda (ARN from the CloudFormation outputs).
 
 ### `get_availability`
 
-Checks table availability at a specific restaurant.
+Checks whether a specific restaurant has availability for tonight.
 
-| Parameter         | Type   | Description                   |
-|-------------------|--------|-------------------------------|
-| `restaurant_name` | string | The name of the restaurant    |
-| `date`            | string | The date in YYYY-MM-DD format |
+| Parameter         | Type   | Required | Description                         |
+|-------------------|--------|----------|-------------------------------------|
+| `restaurant_id`   | string | Yes      | The unique ID of the restaurant     |
 
 Connect this function to the `get-availability` Lambda (ARN from the CloudFormation outputs).
 
@@ -64,7 +73,7 @@ Connect this function to the `get-availability` Lambda (ARN from the CloudFormat
 Use this prompt:
 
 ```
-Find me a moderately priced Italian restaurant for tonight.
+Find me an Italian restaurant for tonight.
 ```
 
 Observe how the agent calls tools in sequence before producing a final recommendation.
@@ -74,4 +83,4 @@ Observe how the agent calls tools in sequence before producing a final recommend
 ## Deliverable
 
 - Your agent instruction prompt
-- A screenshot or copy of the chat history showing the agent using both tools
+- A screenshot or copy of the chat history showing the agent using the tools

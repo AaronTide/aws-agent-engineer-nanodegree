@@ -10,6 +10,7 @@ bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 PROMPT_VERSION_ARN = "<YOUR_PROMPT_VERSION_ARN>"
 GUARDRAIL_ID       = "<YOUR_GUARDRAIL_ID>"
 GUARDRAIL_VERSION  = "1"
+S3_BUCKET          = "<YOUR_S3_BUCKET_NAME>"
 
 OUTPUT_FILE = "eval_responses.jsonl"
 
@@ -131,3 +132,7 @@ if __name__ == "__main__":
             f.write(json.dumps(record) + "\n")
 
     print(f"\nWrote {len(records)} records to {OUTPUT_FILE}")
+
+    s3 = boto3.client("s3")
+    s3.upload_file(OUTPUT_FILE, S3_BUCKET, OUTPUT_FILE)
+    print(f"Uploaded {OUTPUT_FILE} to s3://{S3_BUCKET}/{OUTPUT_FILE}")
