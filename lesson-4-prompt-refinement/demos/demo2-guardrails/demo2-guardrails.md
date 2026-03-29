@@ -2,12 +2,12 @@
 
 ## Content Filters
 
-| Filter | Input | Output |
-|--------|-------|--------|
-| Hate | High | High |
-| Insults | High | High |
-| Violence | High | High |
-| Prompt attacks | High | — |
+| Filter         | Input | Output |
+|----------------|-------|--------|
+| Hate           | High  | High   |
+| Insults        | High  | High   |
+| Violence       | High  | High   |
+| Prompt attacks | High  | —      |
 
 ## Denied Topic
 
