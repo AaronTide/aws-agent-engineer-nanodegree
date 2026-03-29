@@ -13,10 +13,7 @@ Flow Input (incident_report)
     │
     ▼
 [Agent: IncidentReviewAgent]  ←→  asks follow-up questions (multi-turn)
-    │  (when agent has collected all missing details)
-    ▼
-[ReportFinalizer]
-    │
+    │  (when agent has collected all missing details, outputs a formatted report)
     ▼
 Flow Output
 ```
@@ -32,7 +29,7 @@ Flow Output
    - Identify gaps across these required fields: affected systems, severity, timeline, root cause hypothesis, impact, and remediation steps taken
    - Ask targeted follow-up questions — one to three at a time — until all fields are covered
    - Not fabricate or assume any details
-   - When all fields are collected, output a clear signal followed by a full summary of everything gathered
+   - When all fields are collected, output a finalized, structured incident report with clearly labeled fields
 
 > **TODO:** Write the agent instructions.
 
@@ -80,7 +77,7 @@ Impact: ~1,200 failed checkout attempts, estimated $34k in lost transactions
 Remediation: Rolled back to v2.4.0, confirmed 503 rate dropped to zero at 15:18 UTC
 ```
 
-Confirm the agent outputs its completion signal without asking any follow-up questions.
+Confirm the agent outputs a formatted final report without asking any follow-up questions.
 
 ---
 
@@ -108,29 +105,16 @@ Configure the **Flow input** node to expose this single field.
 
 ---
 
-## Task 6 – Add the ReportFinalizer Node
-
-Create a prompt node named `ReportFinalizer`.
-
-This node receives the full summary collected by the agent and formats it into a standardized incident report ready for escalation, handoff, or post-incident review.
-
-> **TODO:** Write a prompt template that formats the collected information into a structured incident report with clearly labeled fields.
-
-Input variable: `collected_info` (String)
-
----
-
-## Task 7 – Connect the Nodes
+## Task 6 – Connect the Nodes
 
 | From | To | What to map |
 |------|----|-------------|
 | Flow input | IncidentReviewAgent | `incident_report` → agent input |
-| IncidentReviewAgent (output) | ReportFinalizer | agent response → `collected_info` |
-| ReportFinalizer (output) | Flow output | model response → output |
+| IncidentReviewAgent (output) | Flow output | agent response → output |
 
 ---
 
-## Task 8 – Prepare and Test
+## Task 7 – Prepare and Test
 
 Click **Prepare**, wait for **Prepared** status, then test the flow end-to-end with the inputs from Task 2.
 
@@ -138,7 +122,6 @@ Click **Prepare**, wait for **Prepared** status, then test the flow end-to-end w
 
 ## Deliverable
 
-- Screenshots of the completed flow and all node configurations
+- Screenshots of the completed flow and the agent node configuration
 - The agent instructions you wrote for `IncidentReviewAgent`
-- The prompt you wrote for `ReportFinalizer`
-- An example conversation showing the agent collecting missing details before the flow produces a final report
+- An example conversation showing the agent collecting missing details before producing a final report
