@@ -8,19 +8,9 @@ In this exercise you will build a restaurant recommendation agent using Amazon B
 
 ## Step 1 – Deploy the Lambda Functions
 
-A CloudFormation template is provided in this folder. It creates two Lambda functions and grants Bedrock permission to invoke them.
+A CloudFormation template is provided in this folder to created functions for your agent. It creates two Lambda functions and grants Bedrock permission to invoke them.
 
-**AWS Console:**
-
-1. Open the [CloudFormation console](https://console.aws.amazon.com/cloudformation)
-2. Click **Create stack** → **With new resources (standard)**
-3. Select **Upload a template file** and choose `template.yaml` from this folder
-4. Enter a stack name, for example `restaurant-agent`
-5. Click **Next** through the remaining steps, check **I acknowledge that AWS CloudFormation might create IAM resources with custom names**, then click **Submit**
-6. Wait for the stack status to reach `CREATE_COMPLETE`
-7. Open the **Outputs** tab and copy the two Lambda ARNs — you will need them when creating the action group
-
-**AWS CLI:**
+You would need to run the following command
 
 ```bash
 aws cloudformation deploy \
@@ -48,12 +38,11 @@ In your agent, create an action group named `restaurant-tools` with two function
 
 ### `search_restaurants`
 
-Searches for restaurants matching the user's preferences.
+Searches for restaurants matching the user's preferences. Returns all restaurants if no cuisine is specified.
 
-| Parameter | Type   | Description           |
-|-----------|--------|-----------------------|
-| `city`    | string | The city to search in |
-| `cuisine` | string | The cuisine type      |
+| Parameter | Type   | Required | Description                                          |
+|-----------|--------|----------|------------------------------------------------------|
+| `cuisine` | string | No       | The cuisine type (e.g. Italian, Japanese). If omitted, all restaurants are returned. |
 
 Connect this function to the `search-restaurants` Lambda (ARN from the CloudFormation outputs).
 
@@ -75,7 +64,7 @@ Connect this function to the `get-availability` Lambda (ARN from the CloudFormat
 Use this prompt:
 
 ```
-Find me a moderately priced Italian restaurant in Seattle for tonight.
+Find me a moderately priced Italian restaurant for tonight.
 ```
 
 Observe how the agent calls tools in sequence before producing a final recommendation.

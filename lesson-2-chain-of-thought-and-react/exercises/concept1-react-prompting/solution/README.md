@@ -14,10 +14,9 @@ Action group name: `restaurant-tools`
 
 ### `search_restaurants`
 
-| Parameter | Type   | Description           |
-|-----------|--------|-----------------------|
-| `city`    | string | The city to search in |
-| `cuisine` | string | The cuisine type      |
+| Parameter | Type   | Required | Description                                          |
+|-----------|--------|----------|------------------------------------------------------|
+| `cuisine` | string | No       | The cuisine type (e.g. Italian, Japanese). If omitted, all restaurants are returned. |
 
 ### `get_availability`
 
@@ -31,14 +30,14 @@ Action group name: `restaurant-tools`
 ## Test Prompt
 
 ```
-Find me a moderately priced Italian restaurant in Seattle for tonight.
+Find me a moderately priced Italian restaurant for tonight.
 ```
 
 ---
 
 ## Expected Agent Behavior
 
-1. The agent calls `search_restaurants` with `city=Seattle`, `cuisine=Italian`, `price_range=moderate`
+1. The agent calls `search_restaurants` with `cuisine=Italian`
 2. The agent picks the top result (`Trattoria Bella`) and calls `get_availability`
 3. `Trattoria Bella` has availability — the agent presents it as the recommendation
 4. If the agent tries `Osteria Romana` instead, it will find no availability and fall back to the next option

@@ -30,12 +30,10 @@ def lambda_handler(event, context):
     parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
     city = parameters.get("city", "").lower()
 
-    attractions = MOCK_ATTRACTIONS.get(city, [
-        {"name": "City Center", "type": "outdoor/indoor", "family_friendly": True, "avg_visit_hours": 2},
-        {"name": "Local Museum", "type": "indoor", "family_friendly": True, "avg_visit_hours": 1.5},
-    ])
-
-    result = {"city": city.title(), "attractions": attractions}
+    if city not in MOCK_ATTRACTIONS:
+        result = {"error": f"Unknown city: '{city.title()}'. Supported cities are: London, Paris, New York."}
+    else:
+        result = {"city": city.title(), "attractions": MOCK_ATTRACTIONS[city]}
 
     return {
         "messageVersion": "1.0",

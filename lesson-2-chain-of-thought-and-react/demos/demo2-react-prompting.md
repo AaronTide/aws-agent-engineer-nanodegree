@@ -37,8 +37,6 @@ Action Input: city=London, date=2026-03-14
 I'll be in London this Saturday with my family. What should we do?
 ```
 
-**Expected first response:** A `Thought` + `Action` + `Action Input` block requesting `get_weather` — not an immediate answer.
-
 ---
 
 ## Mock Tool Results
@@ -58,8 +56,6 @@ Paste these as user messages after each tool request.
 }
 ```
 
-**Expected next response:** Another `Thought` + `Action` + `Action Input` block requesting `get_top_attractions`.
-
 ---
 
 **`get_top_attractions("London")`**
@@ -76,5 +72,3 @@ Paste these as user messages after each tool request.
   ]
 }
 ```
-
-**Expected final response:** A `Thought` + `Final Answer` block with family-friendly recommendations that account for the morning rain — indoor venues prioritized for early in the day.

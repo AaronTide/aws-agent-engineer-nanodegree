@@ -14,9 +14,9 @@ You are a helpful travel planning assistant. When a user asks for travel recomme
 
 Returns weather conditions for a city on a given date.
 
-| Parameter | Type   | Description              |
-|-----------|--------|--------------------------|
-| `city`    | string | The city name            |
+| Parameter | Type   | Description                   |
+|-----------|--------|-------------------------------|
+| `city`    | string | The city name                 |
 | `date`    | string | The date in YYYY-MM-DD format |
 
 ### `get_top_attractions`

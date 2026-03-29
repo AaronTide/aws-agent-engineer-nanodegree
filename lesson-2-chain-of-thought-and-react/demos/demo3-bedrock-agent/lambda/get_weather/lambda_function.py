@@ -28,14 +28,12 @@ def lambda_handler(event, context):
     city = parameters.get("city", "").lower()
     date = parameters.get("date", "")
 
-    weather = MOCK_WEATHER.get(city, {
-        "condition": "Partly cloudy",
-        "temperature_celsius": 12,
-        "wind_mph": 10,
-        "recommendation": "Check a local forecast for more detail",
-    })
-    weather["city"] = city.title()
-    weather["date"] = date
+    if city not in MOCK_WEATHER:
+        result = {"error": f"Unknown city: '{city.title()}'. Supported cities are: London, Paris, New York."}
+    else:
+        result = MOCK_WEATHER[city]
+        result["city"] = city.title()
+        result["date"] = date
 
     return {
         "messageVersion": "1.0",
@@ -45,7 +43,7 @@ def lambda_handler(event, context):
             "functionResponse": {
                 "responseBody": {
                     "TEXT": {
-                        "body": json.dumps(weather)
+                        "body": json.dumps(result)
                     }
                 }
             },
