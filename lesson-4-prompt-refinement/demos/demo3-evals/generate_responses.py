@@ -11,11 +11,11 @@ s3 = boto3.client("s3")
 PROMPT_VERSION_ARN = "<VERSION_ARN>"
 
 # Guardrail created in Demo 2.
-GUARDRAIL_ID      = "<GUADRAIL_ID>"
+GUARDRAIL_ID      = "<YOUR_GUARDRAIL_ID>"
 GUARDRAIL_VERSION = "1"
 
 OUTPUT_FILE = "eval_responses.jsonl"
-S3_BUCKET   = "udacity-agentic-engineer-c1-eval"
+S3_BUCKET   = "<YOUR_S3_BUCKET_NAME>"
 S3_KEY      = "lesson-4/eval_responses.jsonl"
 
 # ---------------------------------------------------------------------------

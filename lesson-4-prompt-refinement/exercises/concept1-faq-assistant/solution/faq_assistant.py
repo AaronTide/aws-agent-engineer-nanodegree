@@ -8,8 +8,6 @@ bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 # ARN of the versioned prompt created in the Bedrock Prompt Management console.
 PROMPT_VERSION_ARN = "<YOUR_PROMPT_VERSION_ARN>"
-
-# Guardrail created in the Bedrock console.
 GUARDRAIL_ID       = "<YOUR_GUARDRAIL_ID>"
 GUARDRAIL_VERSION  = "1"
 

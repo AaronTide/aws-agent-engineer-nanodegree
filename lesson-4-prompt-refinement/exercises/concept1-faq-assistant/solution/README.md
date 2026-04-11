@@ -12,9 +12,14 @@ Do not guess, speculate, or add information beyond what is in the FAQ.
 Keep your answer concise — two to three sentences at most.
 
 FAQ:
+<faq>
 {{faq}}
+</faq>
 
-Customer question: {{customer_question}}
+Customer question:
+<customer_question>
+{{customer_question}}
+</customer_question>
 ```
 
 Key design choices:

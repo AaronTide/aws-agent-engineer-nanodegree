@@ -8,7 +8,7 @@ bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 # ARN of the versioned prompt created in the Bedrock Prompt Management console.
 # Replace this with the ARN copied from your prompt version (e.g., version 1).
-PROMPT_VERSION_ARN = "PROMT_ARN"
+PROMPT_VERSION_ARN = "<YOUR_PROMPT_VERSION_ARN>"
 
 # ---------------------------------------------------------------------------
 # Sample customer email

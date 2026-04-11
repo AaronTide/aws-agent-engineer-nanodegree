@@ -9,7 +9,7 @@ MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
 
 # Guardrail created in the Bedrock console.
 # Replace with the Guardrail ID and version copied from the console.
-GUARDRAIL_ID = "7yqcmlokc72w"
+GUARDRAIL_ID = "<YOUR_GUARDRAIL_ID>"
 GUARDRAIL_VERSION = "1"
 
 SYSTEM_PROMPT = """\
