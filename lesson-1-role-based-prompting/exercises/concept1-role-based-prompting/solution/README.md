@@ -1,5 +1,7 @@
 # Exercise Solution – Technical Documentation Assistant
 
+- **Model:** `Amazon Nova Pro** for this exercise`
+
 ## System Prompt
 
 ```

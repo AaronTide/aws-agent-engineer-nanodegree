@@ -1,26 +1,21 @@
 # Exercise – Technical Documentation Assistant
 
+## Setup
+
+- **Model:** Select **Amazon Nova Pro** from the model dropdown in Bedrock Playground.
+- **System prompt:** The system prompt field is not visible in the default Chat view. To access it, open the **Prompt Management** section in the Bedrock console — the field is labeled **"System instructions – Optional"**.
+
+---
+
 ## Overview
 
 Your engineering team writes fast, messy implementation notes during feature development. Those notes are hard for other developers to understand later. Your task is to build a Bedrock Playground prompt that turns informal notes into polished internal documentation. The assistant should behave like an experienced technical writer who understands software systems and writes clearly for engineers.
 
 ---
 
-## Task 1 – Write an Initial Role-Based Prompt
+## Task 1 – Establish a Baseline (No Role)
 
-Set a system prompt in Bedrock Playground that:
-
-- Assigns the model a clear role as a technical documentation specialist
-- Specifies the audience as internal software engineers
-- Describes the expected output format (structured sections, clear language)
-
-Test it with the sample notes in Task 2 before refining.
-
----
-
-## Task 2 – Test with Sample Engineering Notes
-
-Use the rough notes below as your user message. Paste them as-is — do not clean them up.
+Before writing a role-based prompt, try writing a prompt without specifying a role. Run the task with the following notes:
 
 ```
 <engineering_notes>
@@ -40,7 +35,19 @@ not done yet: need to write migration guide for services still using old session
 </engineering_notes>
 ```
 
-Observe where the output is unclear, too verbose, or missing structure. Take notes — you will use them in Task 3.
+Note the output's structure, tone, and completeness. You will compare against this baseline in Task 3.
+
+---
+
+## Task 2 – Write an Initial Role-Based Prompt
+
+Set a system prompt in Bedrock Playground that:
+
+- Assigns the model a clear role as a technical documentation specialist
+- Specifies the audience as internal software engineers
+- Describes the expected output format (structured sections, clear language)
+
+Test it with the sample notes from the previous task before refining.
 
 ---
 
