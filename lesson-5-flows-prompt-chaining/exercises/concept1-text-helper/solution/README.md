@@ -6,15 +6,13 @@
 Flow Input (user_message)
     │
     ▼
-[DecideOperation]  →  "summarize" or "rewrite"
+[DecideOperation]  →  "summarize", "rewrite", or "other"
     │
     ▼
 [RouteByOperation]
-    ├── operation == "summarize"  →  [Summarizer]
-    └── else                      →  [Rewriter]
-                                          │
-                                          ▼
-                                     Flow Output
+    ├── operation == "summarize"  →  [Summarizer]      →  Flow Output
+    ├── operation == "rewrite"    →  [Rewriter]        →  Flow Output
+    └── else                      →  [OtherResponder]  →  Flow Output
 ```
 
 ---
@@ -23,18 +21,20 @@ Flow Input (user_message)
 
 **Prompt template:**
 ```
-You are an operation classifier for a text editing tool. Your only job is to read the user's message and decide which operation they want: summarize or rewrite.
+You are an operation classifier for a text editing tool. Your only job is to read the user's message and decide which operation they want: summarize, rewrite, or other.
 
-Output exactly one word: either "summarize" or "rewrite". No explanation, no punctuation, no extra text.
+Output exactly one word: "summarize", "rewrite", or "other". No explanation, no punctuation, no extra text.
 
 Use "summarize" for requests about condensing, shortening, giving the main points, or producing a summary.
 Use "rewrite" for requests about improving clarity, readability, simplifying language, or rephrasing.
-If the request is ambiguous or unclear, output "rewrite".
+Use "other" if the message does not appear to be a text processing request at all.
 
 User message:
+<message>
 {{user_message}}
+</message>
 
-Which operation should be applied: summarize or rewrite?
+Which operation should be applied: summarize, rewrite, or other?
 ```
 
 **Input variable:** `user_message` (String)
@@ -44,9 +44,12 @@ Which operation should be applied: summarize or rewrite?
 ## Condition Node: RouteByOperation
 
 - **Condition 1:** `operation == "summarize"` → Summarizer
-- **Default (else):** → Rewriter
+- **Condition 2:** `operation == "rewrite"` → Rewriter
+- **Default (else):** → OtherResponder
 
 Wire: `DecideOperation` model output → condition input `operation`
+
+The else branch catches both explicit `"other"` outputs and any unexpected classifier output.
 
 ---
 
@@ -72,7 +75,9 @@ Format your output exactly like this:
 Do not add bullets about topics not present in the text. Do not editorialize.
 
 User message:
+<message>
 {{user_message}}
+</message>
 ```
 
 **Input variable:** `user_message` (String)
@@ -94,7 +99,32 @@ Rules:
 - Do not add a preamble — output the rewritten text directly
 
 User message:
+<message>
 {{user_message}}
+</message>
+```
+
+**Input variable:** `user_message` (String)
+
+---
+
+## Node 2C: OtherResponder
+
+**Prompt template:**
+```
+You are a text editing assistant. The user's message does not clearly request a summarize or rewrite operation.
+
+Write a brief, polite response that:
+- Acknowledges the message
+- Does not attempt to process any text
+- Asks the user to clarify whether they want to summarize or rewrite their text
+
+Keep the response under 60 words.
+
+User message:
+<message>
+{{user_message}}
+</message>
 ```
 
 **Input variable:** `user_message` (String)
@@ -109,44 +139,17 @@ User message:
 | DecideOperation (model output) | RouteByOperation | response → `operation` |
 | Flow input | Summarizer | `user_message` → `user_message` |
 | Flow input | Rewriter | `user_message` → `user_message` |
+| Flow input | OtherResponder | `user_message` → `user_message` |
 | Summarizer (model output) | Flow output | response → output |
 | Rewriter (model output) | Flow output | response → output |
-
----
-
-## Expected Outputs
-
-### Test Case 1 – Summarize
-
-`DecideOperation` should output `summarize`.
-
-`Summarizer` output (example):
-
-```
-**Summary:**
-- Remote work has pushed companies toward hybrid models splitting time between home and office
-- Collaboration, onboarding, and maintaining culture are harder in distributed settings
-- Geography is no longer a barrier to hiring — companies can recruit talent anywhere
-- Managing distributed teams requires new skills from managers
-- Asynchronous communication and outcome-based reviews are essential in distributed work
-
-**TL;DR:** Remote work has expanded talent pools and forced companies to adopt new management practices to keep distributed teams cohesive.
-```
-
-### Test Case 2 – Rewrite
-
-`DecideOperation` should output `rewrite`.
-
-`Rewriter` output (example):
-
-```
-Using asynchronous communication in distributed teams has shown real benefits for collaboration, even when team members work in different time zones. The main challenge is keeping everyone aligned without the ability to meet in real time.
-```
+| OtherResponder (model output) | Flow output | response → output |
 
 ---
 
 ## Why These Prompts Work
 
-**DecideOperation:** The classifier prompt is strict about output format ("exactly one word") and provides a clear default for ambiguous cases. This prevents the condition node from receiving unexpected values like `"summarize it"` or `"I would choose summarize"` that would break the routing logic.
+**DecideOperation:** The classifier prompt is strict about output format ("exactly one word") and defines explicit behavior for all three cases — including inputs that aren't text processing requests. Adding `"other"` as an explicit output is better than relying on a default: it gives the model a named category for edge cases rather than forcing everything into `"rewrite"`.
+
+**OtherResponder:** The prompt instructs the node not to process any text and to ask for clarification instead. This mirrors the pattern from the classifier: when the intent is unclear, the response should be to ask, not to guess.
 
 **Summarizer and Rewriter:** Both nodes receive the full `user_message` and are instructed to extract the text themselves. This keeps the flow simple — one input variable flows through every node, and no node needs to split or transform the input before passing it downstream.

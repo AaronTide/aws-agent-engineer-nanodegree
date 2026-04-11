@@ -12,15 +12,13 @@ You are adding a "Text Helper" feature to an internal wiki tool. Users paste a m
 Flow Input (user_message)
     │
     ▼
-[Node 1: DecideOperation]  →  outputs "summarize" or "rewrite"
+[Node 1: DecideOperation]  →  outputs "summarize", "rewrite", or "other"
     │
     ▼
 [Condition: RouteByOperation]
-    ├── operation == "summarize"  →  [Node 2A: Summarizer]
-    └── else                      →  [Node 2B: Rewriter]
-                                            │
-                                            ▼
-                                       Flow Output
+    ├── operation == "summarize"  →  [Node 2A: Summarizer]      →  Flow Output
+    ├── operation == "rewrite"    →  [Node 2B: Rewriter]        →  Flow Output
+    └── else                      →  [Node 2C: OtherResponder]  →  Flow Output
 ```
 
 ---
@@ -45,13 +43,13 @@ Configure the **Flow input** node to expose this single field.
 
 Create a prompt node named `DecideOperation`.
 
-This node reads the user's message and outputs exactly one word: `summarize` or `rewrite`.
+This node reads the user's message and outputs exactly one word: `summarize`, `rewrite`, or `other`.
 
 **Your task:** Write a prompt template that:
 - Instructs the model to output only the single word — no explanation, no punctuation
 - Maps `summarize` to requests about condensing, shortening, or summarizing
 - Maps `rewrite` to requests about clarity, improving readability, or rephrasing
-- Handles ambiguous input by defaulting to `rewrite`
+- Outputs `other` for messages that don't appear to be a text processing request at all
 
 > **TODO:** Write the prompt template for this node.
 
@@ -64,7 +62,8 @@ Input variable: `user_message` (String)
 Create a condition node named `RouteByOperation`.
 
 - **Condition 1:** `operation == "summarize"` → routes to Summarizer
-- **Default (else):** routes to Rewriter
+- **Condition 2:** `operation == "rewrite"` → routes to Rewriter
+- **Default (else):** routes to OtherResponder
 
 Wire the output of `DecideOperation` to the condition input named `operation`.
 
@@ -99,7 +98,22 @@ Input variable: `user_message` (String)
 
 ---
 
-## Task 7 – Wire the Connections
+## Task 7 – Add Node 2C: OtherResponder
+
+Create a prompt node named `OtherResponder`.
+
+This node handles messages that don't clearly request a summarize or rewrite operation. It should:
+- Acknowledge the message politely
+- Not attempt to process any text
+- Ask the user to clarify whether they want to summarize or rewrite
+
+> **TODO:** Write the prompt template for this node.
+
+Input variable: `user_message` (String)
+
+---
+
+## Task 8 – Wire the Connections
 
 Connect the nodes as follows:
 
@@ -109,12 +123,14 @@ Connect the nodes as follows:
 | DecideOperation (output) | RouteByOperation | model response → `operation` |
 | Flow input | Summarizer | `user_message` → `user_message` |
 | Flow input | Rewriter | `user_message` → `user_message` |
+| Flow input | OtherResponder | `user_message` → `user_message` |
 | Summarizer (output) | Flow output | model response → output |
 | Rewriter (output) | Flow output | model response → output |
+| OtherResponder (output) | Flow output | model response → output |
 
 ---
 
-## Task 8 – Prepare and Test
+## Task 9 – Prepare and Test
 
 Click **Prepare**, wait for the status to reach **Prepared**, then test with the cases below.
 
@@ -142,20 +158,19 @@ Expected: `DecideOperation` outputs `rewrite` → `Rewriter` runs
 
 ---
 
-### Test Case 3 – Try an ambiguous request
+### Test Case 3 – Other (no clear operation)
 
 ```
-Do something useful with this text.
-
-Remote work has fundamentally changed how companies think about office space, talent acquisition, and team culture. Companies that once required all employees to be physically present have adopted hybrid models, where employees split time between home and the office.
+Hey, can you help me with something?
 ```
 
-Observe which branch is taken. Does the default behavior feel correct?
+Expected: `DecideOperation` outputs `other` → `OtherResponder` runs
+
 
 ---
 
 ## Deliverable
 
 - Screenshots of the completed flow and all node configurations
-- The prompts you wrote for each of the three prompt nodes
-- The output produced for Test Cases 1 and 2
+- The prompts you wrote for each of the four prompt nodes
+- The output produced for Test Cases 1, 2, and 3
