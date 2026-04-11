@@ -5,13 +5,13 @@ import boto3
 # ---------------------------------------------------------------------------
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
+MODEL_ID = "amazon.nova-lite-v1:0"
 
 # ---------------------------------------------------------------------------
 # System prompt
 # ---------------------------------------------------------------------------
 
-# TODO (Task 2): Write the system prompt.
+# TODO (Task 1): Write the system prompt.
 # The assistant should:
 # - Help users plan visits to cities
 # - NOT answer from memory — always use tools first
@@ -31,7 +31,15 @@ WEATHER_DATA = {
         "temperature_celsius": 11,
         "wind_mph": 12,
         "recommendation": "Bring a light jacket and umbrella for the morning",
-    }
+    },
+    ("london", "2026-03-15"): {
+        "city": "London",
+        "date": "2026-03-15",
+        "condition": "Clear and sunny throughout the day",
+        "temperature_celsius": 14,
+        "wind_mph": 8,
+        "recommendation": "Great day to spend time outdoors",
+    },
 }
 
 ATTRACTIONS_DATA = {
@@ -42,7 +50,10 @@ ATTRACTIONS_DATA = {
             {"name": "Tower of London",       "type": "outdoor/indoor",  "family_friendly": True, "avg_visit_hours": 2.5},
             {"name": "Natural History Museum","type": "indoor",          "family_friendly": True, "avg_visit_hours": 2.0},
             {"name": "Hyde Park",             "type": "outdoor",         "family_friendly": True, "avg_visit_hours": 1.5},
-            {"name": "Covent Garden",         "type": "outdoor/indoor",  "family_friendly": True, "avg_visit_hours": 1.0},
+            {"name": "Covent Garden",         "type": "outdoor/indoor",  "family_friendly": True,  "avg_visit_hours": 1.0},
+            {"name": "The Comedy Store",      "type": "indoor",          "family_friendly": False, "avg_visit_hours": 2.0},
+            {"name": "Soho Nightlife",        "type": "outdoor/indoor",  "family_friendly": False, "avg_visit_hours": 3.0},
+            {"name": "Shoreditch Bar Crawl",  "type": "outdoor/indoor",  "family_friendly": False, "avg_visit_hours": 4.0},
         ],
     }
 }
@@ -59,12 +70,12 @@ TOOLS = [
                 "json": {
                     "type": "object",
                     "properties": {
-                        # TODO (Task 3a): Define the two input properties — city and date
+                        # TODO (Task 2): Define the two input properties — city and date
                         # "city": { "type": "string", "description": "..." },
                         # "date": { "type": "string", "description": "..." },
                     },
                     "required": [
-                        # TODO (Task 3a): List the required fields
+                        # TODO (Task 2): List the required fields
                     ],
                 }
             },
@@ -78,11 +89,11 @@ TOOLS = [
                 "json": {
                     "type": "object",
                     "properties": {
-                        # TODO (Task 3b): Define the one input property — city
+                        # TODO (Task 2): Define the one input property — city
                         # "city": { "type": "string", "description": "..." },
                     },
                     "required": [
-                        # TODO (Task 3b): List the required fields
+                        # TODO (Task 2): List the required fields
                     ],
                 }
             },
@@ -94,13 +105,13 @@ TOOLS = [
 # Tool implementations
 # ---------------------------------------------------------------------------
 def get_weather(city: str, date: str) -> dict:
-    # TODO (Task 4a): Look up (city.lower(), date) in WEATHER_DATA.
+    # TODO (Task 3): Look up (city.lower(), date) in WEATHER_DATA.
     # Return the matching dict, or {"city": city, "date": date, "condition": "No data available"} if not found.
     pass
 
 
 def get_top_attractions(city: str) -> dict:
-    # TODO (Task 4b): Look up city.lower() in ATTRACTIONS_DATA.
+    # TODO (Task 3): Look up city.lower() in ATTRACTIONS_DATA.
     # Return the matching dict, or {"city": city, "attractions": []} if not found.
     pass
 

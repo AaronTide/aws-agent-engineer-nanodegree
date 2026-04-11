@@ -6,7 +6,7 @@ import json
 # ---------------------------------------------------------------------------
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
+MODEL_ID = "amazon.nova-lite-v1:0"
 
 SYSTEM_PROMPT = """\
 You are a helpful travel planning assistant. Your job is to help the user find a restaurant to book for tonight.

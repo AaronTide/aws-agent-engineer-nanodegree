@@ -78,6 +78,21 @@ def get_top_attractions(city: str) -> dict:
 
 ---
 
+## Example Prompts
+
+Try these four prompts to exercise different combinations of weather and group type:
+
+| Scenario | Prompt |
+|----------|--------|
+| Rainy day, family | `I'll be in London on 2026-03-14 with my family. What should we do?` |
+| Sunny day, family | `I'll be in London on 2026-03-15 with my kids. What should we do?` |
+| Rainy day, adults | `I'm in London on 2026-03-14 for a night out with friends. What do you suggest?` |
+| Sunny day, adults | `I'm visiting London on 2026-03-15 with friends. What's fun to do?` |
+
+The model should favour indoor attractions on the rainy day and outdoor ones on the sunny day, and should omit non-family-friendly options when the group includes children.
+
+---
+
 ## Sample Session
 
 ```
@@ -85,7 +100,7 @@ Travel Planner
 ========================================
 Ask me to help plan your visit to a city.
 
-You: I'll be in London this Saturday with my family. What should we do?
+You: I'll be in London on 2026-03-14 with my family. What should we do?
   [tool call] get_weather({'city': 'London', 'date': '2026-03-14'})
   [tool result] {'city': 'London', 'condition': 'Light rain in the morning, clearing to partly cloudy by afternoon', ...}
   [tool call] get_top_attractions({'city': 'London'})

@@ -6,7 +6,7 @@ import json
 # ---------------------------------------------------------------------------
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
+MODEL_ID = "amazon.nova-lite-v1:0"
 
 # ---------------------------------------------------------------------------
 # Sample meeting notes
@@ -47,10 +47,8 @@ def summarize_notes(notes: str) -> str:
     )
 
     body = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 512,
-        "temperature": 0.0,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": [{"role": "user", "content": [{"text": prompt}]}],
+        "inferenceConfig": {"maxTokens": 512, "temperature": 0.0},
     }
 
     response = bedrock.invoke_model(
@@ -61,7 +59,7 @@ def summarize_notes(notes: str) -> str:
     )
 
     result = json.loads(response["body"].read())
-    return result["content"][0]["text"]
+    return result["output"]["message"]["content"][0]["text"]
 
 
 # ---------------------------------------------------------------------------
