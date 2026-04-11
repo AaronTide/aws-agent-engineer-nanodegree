@@ -9,44 +9,46 @@
         "Design classifier prompts that produce consistent, condition-compatible output"
       ],
       "submission_requirements": [
-        "The flow contains an Input node connected to a Prompt node that classifies the customer message",
-        "The classifier Prompt node instructs the model to return only one of the defined category labels with no additional text",
-        "The flow contains a Condition node that routes execution based on the classifier output",
-        "The Condition node expressions use exact string matching that aligns with the labels defined in the classifier prompt",
-        "At least three distinct paths exist in the flow, each terminating at a separate Output node"
+        "The flow classifies incoming customer messages into distinct categories",
+        "The classifier produces consistent, unambiguous output that can drive routing decisions",
+        "Messages are routed to distinct paths based on their category",
+        "Distinct paths exist in the flow, each terminating at a separate Output node"
       ],
       "reviewer_tips": {
         "pass_if": [
           "Messages of different types route to different branches and each path ends at its own Output node"
         ],
         "fail_if": [
-          "Fewer than three paths are present"
+          "The application is implemented as a single path"
         ],
         "pass_with_comment_if": [
-          "The flow uses structured output to generate a routing decision"
+          "Some paths are combined into a single route"
         ],
-        "praise_if": []
+        "praise_if": [
+          "The flow uses structured output to generate a routing decision"
+        ]
       }
     },
     {
-      "section": "Implement the Bug Report Path Using an Agent and Lambda Tool",
-      "criterion": "Implement the bug report path using a Bedrock Agent configured with a Lambda-backed tool to collect information and create tickets",
+      "section": "Implement the Bug Report Path Using a Bedrock Agent",
+      "criterion": "Implement the bug report path using a Bedrock Agent with a tool to collect information and create tickets",
       "learning_objectives": [
-        "Configure Bedrock Agents with action groups and Lambda tool use",
-        "Collect structured information from users through agent interactions"
+        "Configure Bedrock Agents with tools to perform actions on behalf of the user",
+        "Collect structured information from users through agent interactions",
+        "Implement a feedback loop using a Bedrock agent"
       ],
       "submission_requirements": [
-        "The bug report path includes at least one Agent node",
-        "The Agent node is configured with an action group that calls the create-bug-report Lambda function",
+        "The bug report path includes a Bedrock agent",
+        "The agent is configured to invoke the Lambda tool to persist the ticket",
         "The agent collects bug description, steps to reproduce, and environment information from the customer",
         "A record is created in the BugReports DynamoDB table when a bug report message is processed through the flow"
       ],
       "reviewer_tips": {
         "pass_if": [
-          "A bug report message sent through the flow results in a new item in the BugReports table"
+          "A bug report message sent through the flow results in a new item in the BugReports DynamoDB table"
         ],
         "fail_if": [
-          "The Agent node is not connected to the Lambda tool",
+          "The agent is not connected to the create-bug-report tool",
           "No DynamoDB record is created when a bug report message is sent"
         ],
         "pass_with_comment_if": [
@@ -56,16 +58,15 @@
       }
     },
     {
-      "section": "Implement Platform Question and Other Request Paths Using Prompt Nodes",
-      "criterion": "Implement paths for platform questions and other customer requests using Prompt nodes with embedded instructions",
+      "section": "Implement Platform Question and Other Request Paths",
+      "criterion": "Implement paths for platform questions and other customer requests",
       "learning_objectives": [
-        "Design prompt nodes that answer questions from embedded documentation",
+        "Design prompt nodes that answer questions grounded in provided documentation",
         "Handle out-of-scope requests with appropriate redirection"
       ],
       "submission_requirements": [
-        "The platform question path includes a Prompt node with the FAQ document content embedded in the prompt template",
-        "The FAQ prompt produces a relevant answer when the question is covered by the FAQ",
-        "The FAQ prompt directs the user to a support phone number when the question is not covered by the FAQ",
+        "The application produces a relevant answer when the question is covered by the FAQ",
+        "The application directs a user to a support phone number when the question is not covered by the FAQ",
         "A separate path exists for other customer support requests that directs the user to a support phone number"
       ],
       "reviewer_tips": {
@@ -75,14 +76,14 @@
           "An other-request message returns a phone number redirect"
         ],
         "fail_if": [
-          "The FAQ path is missing or the prompt template contains no FAQ content",
+          "The FAQ path is missing or the FAQ content is not used to answer platform questions",
           "The other-requests path is absent"
         ],
         "pass_with_comment_if": [
-          "The embedded FAQ is minimal — note that a more complete document improves response quality"
         ],
         "praise_if": [
-          "The student uses a knowledge base instead of embedding FAQ into a prompt"
+          "The student uses a knowledge base instead of embedding FAQ into a prompt",
+          "The application is handling bad requests like a prompt injection attack"
         ]
       }
     },
@@ -95,10 +96,9 @@
       ],
       "submission_requirements": [
         "flow-tests.json contains at least one test entry for the bug report path, at least one for the platform question path, and at least one for the other requests path",
-        "Each test entry contains an id, prompt, and expected field",
         "The generate-eval-dataset.py script is run against the flow and produces a JSONL output file",
         "The JSONL file is uploaded to S3 and a Bedrock Evaluation job is created",
-        "The student provides at least one written observation about the evaluation results"
+        "The result's correctness score is close to 1"
       ],
       "reviewer_tips": {
         "pass_if": [
@@ -108,20 +108,20 @@
           "The test file covers fewer than three paths",
           "The JSONL file is not produced",
           "No evaluation job was created",
-          "The result correctness score is close to 0"
+          "The result's correctness score is close to 0"
         ],
         "pass_with_comment_if": [
-          "Scores are uniformly low — encourage the student to review reference responses and iterate on prompts"
+          "Test scores for some test-cases are low — encourage the student to review reference responses and iterate on prompts"
         ],
         "praise_if": [
-          "The student added edge-case prompts such as ambiguous messages or prompt injection attempts"
+          "The student added edge-case tests such as ambiguous messages or prompt injection attempts"
         ]
       }
     }
   ],
   "stand_out_suggestions": [
     "Add a guardrail to the flow that blocks harmful content and prompt injection attempts before any model processes the message.",
-    "Add edge-case test prompts to flow-tests.json: ambiguous messages that could belong to multiple categories, very short messages with minimal context, and prompt injection attempts.",
+    "Add edge-case test prompts to flow-tests.json: ambiguous messages that could belong to multiple categories, very short messages with minimal context or prompt injection attempts.",
     "Replace the embedded FAQ with a Bedrock Knowledge Base backed by a vector index so the flow can handle a larger document without embedding it in every prompt.",
     "Use structured output to ensure that the classifier node only produces valid values."
   ]
