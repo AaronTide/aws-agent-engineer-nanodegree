@@ -20,7 +20,8 @@ You would need to run the following command
 aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name restaurant-agent \
-  --capabilities CAPABILITY_NAMED_IAM
+  --capabilities CAPABILITY_NAMED_IAM \
+  --region us-east-1
 ```
 
 ---
@@ -29,42 +30,70 @@ aws cloudformation deploy \
 
 1. Open the [Amazon Bedrock console](https://console.aws.amazon.com/bedrock) and navigate to **Agents**
 2. Click **Create agent**
-3. Write an agent instruction that:
+3. Under **Model**, select **Amazon Nova Pro**
+4. Write an agent instruction that:
    - Describes it as a restaurant recommendation assistant
    - Tells it to always use tools before making suggestions
    - Tells it to base its recommendation on tool results, not assumptions
 
 ---
 
-## Step 3 – Create the Action Group
+## Step 3 – Create the Action Groups
 
-In your agent, create an action group named `restaurant-tools` with three functions:
+Bedrock only allows one Lambda function per action group. Create three separate action groups, one for each Lambda.
 
-### `get_cuisines`
+---
 
-Returns the list of cuisine types available. Takes no parameters.
+### Action Group 1: `get-cuisines`
 
-Connect this function to the `get-cuisines` Lambda (ARN from the CloudFormation outputs).
+1. In your agent, click **Add action group**
+2. Name it `get-cuisines`
+3. Under **Action group type**, choose **Define with function details**
+4. Add a function named `get_cuisines`:
+   - Description: Returns the list of cuisine types available
+   - No parameters
+5. Under **Action group invocation**, select the `get-cuisines` Lambda (ARN from the CloudFormation outputs)
+6. Click **Save**
 
-### `search_restaurants`
+---
 
-Searches for restaurants. Returns all restaurants if no cuisine is specified.
+### Action Group 2: `search-restaurants`
+
+1. Click **Add action group**
+2. Name it `search-restaurants`
+3. Under **Action group type**, choose **Define with function details**
+4. Add a function named `search_restaurants`:
+   - Description: Searches for restaurants. Returns all restaurants if no cuisine is specified.
+   - Add parameter:
 
 | Parameter | Type   | Required | Description                                                              |
 |-----------|--------|----------|--------------------------------------------------------------------------|
 | `cuisine` | string | No       | The cuisine type (e.g. Italian, Japanese). If omitted, all are returned. |
 
-Connect this function to the `search-restaurants` Lambda (ARN from the CloudFormation outputs).
+5. Under **Action group invocation**, select the `search-restaurants` Lambda (ARN from the CloudFormation outputs)
+6. Click **Save**
 
-### `get_availability`
+---
 
-Checks whether a specific restaurant has availability for tonight.
+### Action Group 3: `get-availability`
+
+1. Click **Add action group**
+2. Name it `get-availability`
+3. Under **Action group type**, choose **Define with function details**
+4. Add a function named `get_availability`:
+   - Description: Checks whether a specific restaurant has availability for tonight.
+   - Add parameter:
 
 | Parameter         | Type   | Required | Description                         |
 |-------------------|--------|----------|-------------------------------------|
 | `restaurant_id`   | string | Yes      | The unique ID of the restaurant     |
 
-Connect this function to the `get-availability` Lambda (ARN from the CloudFormation outputs).
+5. Under **Action group invocation**, select the `get-availability` Lambda (ARN from the CloudFormation outputs)
+6. Click **Save**
+
+---
+
+Once all three action groups are saved, click **Prepare** to rebuild the agent before testing.
 
 ---
 

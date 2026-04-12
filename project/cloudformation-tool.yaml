@@ -1,3 +1,8 @@
+# Auto-generated from cloudformation-tool-base.yaml — do not edit directly.
+# To regenerate: edit cloudformation-tool-base.yaml and create_bug_report.py,
+# then run:
+#   python generate_cloudformation_tool.py
+
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Bug report tool - DynamoDB table, Lambda function, and IAM role
 

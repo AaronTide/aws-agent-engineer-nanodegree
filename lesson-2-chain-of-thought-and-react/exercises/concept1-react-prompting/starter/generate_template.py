@@ -11,13 +11,12 @@ to regenerate template.yaml. Do not edit template.yaml directly.
 Note on $ signs
 ---------------
 template_base.yaml uses Python string.Template syntax: $var or ${var} marks a
-placeholder. If you ever add a CloudFormation !Sub expression whose value
-contains ${...} (e.g. ${AWS::Region}), escape the dollar sign as $$ in
-template_base.yaml so string.Template leaves it alone:
+placeholder. This script uses safe_substitute(), so any ${...} patterns that
+are not recognised placeholder names (e.g. CloudFormation !Sub variables like
+${AWS::Region}) are left unchanged in the output.
 
-    !Sub "arn:aws:s3:::$${AWS::AccountId}-my-bucket"
-                         ^^
-                         becomes $ in the generated template.yaml
+If you ever need a literal $ followed by a recognised placeholder name, write
+$$ in the base template (e.g. $$get_cuisines produces $get_cuisines).
 """
 from pathlib import Path
 from string import Template
@@ -42,7 +41,7 @@ def indented(path: Path, spaces: int = 10) -> str:
 
 
 def generate() -> None:
-    result = Template(BASE_TEMPLATE.read_text()).substitute(
+    result = Template(BASE_TEMPLATE.read_text()).safe_substitute(
         get_cuisines=indented(SCRIPT_DIR / 'lambda/get_cuisines/lambda_function.py'),
         search_restaurants=indented(SCRIPT_DIR / 'lambda/search_restaurants/lambda_function.py'),
         get_availability=indented(SCRIPT_DIR / 'lambda/get_availability/lambda_function.py'),

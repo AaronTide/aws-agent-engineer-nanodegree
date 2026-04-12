@@ -1,9 +1,10 @@
 import json
+import os
 import uuid
 from datetime import datetime, timezone
 import boto3
 
-table = boto3.resource("dynamodb").Table("BugReports")
+table = boto3.resource("dynamodb").Table(os.environ["TABLE_NAME"])
 
 REQUIRED_FIELDS = ("description", "stepsToReproduce", "environment")
 
