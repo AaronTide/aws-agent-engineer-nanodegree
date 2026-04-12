@@ -1,3 +1,7 @@
+# Auto-generated from template_base.yaml — do not edit directly.
+# To regenerate: edit template_base.yaml and the lambda/ files, then run
+#   python generate_template.py
+
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Lambda functions for the restaurant recommendation agent exercise
 
@@ -28,6 +32,7 @@ Resources:
         ZipFile: |
           import json
 
+
           RESTAURANTS = [
               {"id": "r1", "name": "Trattoria Bella", "cuisine": "Italian",  "rating": 4.6},
               {"id": "r2", "name": "Osteria Romana",  "cuisine": "Italian",  "rating": 4.4},
@@ -39,15 +44,23 @@ Resources:
               {"id": "r8", "name": "The Grill House", "cuisine": "American", "rating": 4.2},
           ]
 
+
           def lambda_handler(event, context):
               cuisines = sorted(set(r["cuisine"] for r in RESTAURANTS))
               result = {"cuisines": cuisines}
+
               return {
                   "messageVersion": "1.0",
                   "response": {
                       "actionGroup": event["actionGroup"],
                       "function": event["function"],
-                      "functionResponse": {"responseBody": {"TEXT": {"body": json.dumps(result)}}},
+                      "functionResponse": {
+                          "responseBody": {
+                              "TEXT": {
+                                  "body": json.dumps(result)
+                              }
+                          }
+                      },
                   },
               }
 
@@ -69,6 +82,7 @@ Resources:
         ZipFile: |
           import json
 
+
           RESTAURANTS = [
               {"id": "r1", "name": "Trattoria Bella", "cuisine": "Italian",  "rating": 4.6},
               {"id": "r2", "name": "Osteria Romana",  "cuisine": "Italian",  "rating": 4.4},
@@ -79,6 +93,7 @@ Resources:
               {"id": "r7", "name": "Le Bistro",       "cuisine": "French",   "rating": 4.8},
               {"id": "r8", "name": "The Grill House", "cuisine": "American", "rating": 4.2},
           ]
+
 
           def lambda_handler(event, context):
               parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
@@ -98,7 +113,13 @@ Resources:
                   "response": {
                       "actionGroup": event["actionGroup"],
                       "function": event["function"],
-                      "functionResponse": {"responseBody": {"TEXT": {"body": json.dumps(result)}}},
+                      "functionResponse": {
+                          "responseBody": {
+                              "TEXT": {
+                                  "body": json.dumps(result)
+                              }
+                          }
+                      },
                   },
               }
 
@@ -120,6 +141,7 @@ Resources:
         ZipFile: |
           import json
 
+
           AVAILABILITY = {
               "r1": True,
               "r2": False,
@@ -130,6 +152,7 @@ Resources:
               "r7": False,
               "r8": True,
           }
+
 
           def lambda_handler(event, context):
               parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
@@ -146,7 +169,13 @@ Resources:
                   "response": {
                       "actionGroup": event["actionGroup"],
                       "function": event["function"],
-                      "functionResponse": {"responseBody": {"TEXT": {"body": json.dumps(result)}}},
+                      "functionResponse": {
+                          "responseBody": {
+                              "TEXT": {
+                                  "body": json.dumps(result)
+                              }
+                          }
+                      },
                   },
               }
 
