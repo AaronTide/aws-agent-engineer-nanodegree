@@ -34,7 +34,7 @@
                             "modelId": "amazon.nova-pro-v1:0",
                             "inferenceConfiguration": {
                                 "text": {
-                                    "temperature": 0.699999988079071,
+                                    "temperature": 0.0,
                                     "topP": 0.8999999761581421,
                                     "maxTokens": 512,
                                     "stopSequences": []
@@ -114,7 +114,7 @@
                             "templateType": "TEXT",
                             "templateConfiguration": {
                                 "text": {
-                                    "text": "User has sent a customer request:\n```\n{{customer_request}}\n```\nUnfortunatetly, we cannot process them automatically.\nReply with a message politely explaining that they would have to call phone number +12345678 for support team to help with this request.\nDo not write anything else. Your output will be sent to a user directly.",
+                                    "text": "User has sent a customer request:\n```\n{{customer_request}}\n```\nUnfortunately, we cannot process them automatically.\nReply with a message politely explaining that they would have to call phone number +12345678 for support team to help with this request.\nDo not write anything else. Your output will be sent to a user directly.",
                                     "inputVariables": [
                                         {
                                             "name": "customer_request"

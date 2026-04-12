@@ -143,6 +143,8 @@ Each line is a JSON object with this structure:
 
 If any flow call failed, the `response` field will contain an error message prefixed with `[FLOW_ERROR]`. Check the terminal output for details on what went wrong.
 
+> **Note — bug report path limitation:** The `BugDataCollector` agent has **User Input** enabled, which means it pauses mid-execution to ask the customer a follow-up question rather than completing in a single pass. The script captures that first question and stops — it does not continue the conversation or wait for the `BugReportCreator` agent to write a DynamoDB record. As a result, the bug-report test case only verifies that the message was routed to the correct branch and that the agent asked for more information; it does not test end-to-end bug report creation.
+
 ## 5. Create Testing Resources
 
 Before running evaluations you need an S3 bucket to store the dataset and results, and an IAM role that Bedrock Evaluations can assume. These are defined in `cloudformation-testing.yaml`.
