@@ -87,6 +87,17 @@ To test your application you will do the following:
 
 You need to follow the steps in the [Testing and Evaluation](docs/testing.md) document to run automated tests and evaluate your flow.
 
+## Cleanup
+
+When you are done with the project, delete the CloudFormation stacks to avoid ongoing charges:
+
+```bash
+aws cloudformation delete-stack --stack-name bug-report-tool-stack --region us-east-1
+aws cloudformation delete-stack --stack-name bug-report-testing-stack --region us-east-1
+```
+
+This removes the Lambda function, DynamoDB table, IAM roles, and S3 bucket created during the project.
+
 ## Built With
 
 * [Amazon Bedrock Flows](https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html) - Orchestration of the LLM application

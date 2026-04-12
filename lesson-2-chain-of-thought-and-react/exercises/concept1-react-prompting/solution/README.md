@@ -45,3 +45,15 @@ Find me an Italian restaurant for tonight.
 3. The agent calls `get_availability` with `restaurant_id=r1` — `Trattoria Bella` has availability
 4. The agent presents `Trattoria Bella` as the recommendation
 5. If the agent tries `Osteria Romana` (r2) first, it will find no availability and fall back to `Trattoria Bella`
+
+---
+
+## Cleanup
+
+When you are done with the exercise, delete the CloudFormation stack to avoid ongoing charges:
+
+```bash
+aws cloudformation delete-stack --stack-name restaurant-agent --region us-east-1
+```
+
+You can also delete the Bedrock Agent from the Amazon Bedrock console.

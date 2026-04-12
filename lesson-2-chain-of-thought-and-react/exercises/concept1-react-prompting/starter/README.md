@@ -84,3 +84,15 @@ Observe how the agent calls tools in sequence before producing a final recommend
 
 - Your agent instruction prompt
 - A screenshot or copy of the chat history showing the agent using the tools
+
+---
+
+## Cleanup
+
+When you are done with the exercise, delete the CloudFormation stack to avoid ongoing charges:
+
+```bash
+aws cloudformation delete-stack --stack-name restaurant-agent --region us-east-1
+```
+
+You can also delete the Bedrock Agent from the Amazon Bedrock console.
