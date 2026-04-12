@@ -6,7 +6,9 @@ Resources:
   BugReportsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: BugReports
+      TableName: !Sub
+        - BugReports-${Suffix}
+        - Suffix: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref "AWS::StackId"]]]]
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: ticketId
@@ -18,7 +20,9 @@ Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: create-bug-report-role
+      RoleName: !Sub
+        - create-bug-report-role-${Suffix}
+        - Suffix: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref "AWS::StackId"]]]]
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -41,18 +45,24 @@ Resources:
     Type: AWS::Lambda::Function
     DependsOn: LambdaExecutionRole
     Properties:
-      FunctionName: create-bug-report
+      FunctionName: !Sub
+        - create-bug-report-${Suffix}
+        - Suffix: !Select [0, !Split ["-", !Select [2, !Split ["/", !Ref "AWS::StackId"]]]]
       Runtime: python3.12
       Handler: index.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref BugReportsTable
       Code:
         ZipFile: |
           import json
+          import os
           import uuid
           from datetime import datetime, timezone
           import boto3
 
-          table = boto3.resource("dynamodb").Table("BugReports")
+          table = boto3.resource("dynamodb").Table(os.environ["TABLE_NAME"])
 
           REQUIRED_FIELDS = ("description", "stepsToReproduce", "environment")
 
