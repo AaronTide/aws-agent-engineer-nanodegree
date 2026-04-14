@@ -34,13 +34,17 @@
                             "modelId": "amazon.nova-pro-v1:0",
                             "inferenceConfiguration": {
                                 "text": {
-                                    "temperature": 0.0,
-                                    "topP": 0.8999999761581421,
+                                    "temperature": 0.699999988079071,
+                                    "topP": 1.0,
                                     "maxTokens": 512,
                                     "stopSequences": []
                                 }
                             }
                         }
+                    },
+                    "guardrailConfiguration": {
+                        "guardrailIdentifier": "arn:aws:bedrock:us-east-1:913036176028:guardrail/3lr9oi85fab5",
+                        "guardrailVersion": "DRAFT"
                     }
                 }
             },
@@ -114,7 +118,7 @@
                             "templateType": "TEXT",
                             "templateConfiguration": {
                                 "text": {
-                                    "text": "User has sent a customer request:\n```\n{{customer_request}}\n```\nUnfortunately, we cannot process them automatically.\nReply with a message politely explaining that they would have to call phone number +12345678 for support team to help with this request.\nDo not write anything else. Your output will be sent to a user directly.",
+                                    "text": "User has sent a customer request:\n```\n{{customer_request}}\n```\nUnfortunatetly, we cannot process them automatically.\nReply with a message politely explaining that they would have to call phone number +12345678 for support team to help with this request.\nDo not write anything else. Your output will be sent to a user directly.",
                                     "inputVariables": [
                                         {
                                             "name": "customer_request"
@@ -122,7 +126,7 @@
                                     ]
                                 }
                             },
-                            "modelId": "arn:aws:bedrock:us-east-1:<account-id>:inference-profile/us.amazon.nova-premier-v1:0",
+                            "modelId": "arn:aws:bedrock:us-east-1:913036176028:inference-profile/us.amazon.nova-premier-v1:0",
                             "inferenceConfiguration": {
                                 "text": {
                                     "temperature": 0.699999988079071,
@@ -168,7 +172,7 @@
             "type": "Agent",
             "configuration": {
                 "agent": {
-                    "agentAliasArn": "arn:aws:bedrock:us-east-1:<account-id>:agent-alias/8086PZGUEW/TSTALIASID"
+                    "agentAliasArn": "arn:aws:bedrock:us-east-1:913036176028:agent-alias/8086PZGUEW/TSTALIASID"
                 }
             },
             "inputs": [
@@ -200,7 +204,7 @@
             "type": "Agent",
             "configuration": {
                 "agent": {
-                    "agentAliasArn": "arn:aws:bedrock:us-east-1:<account-id>:agent-alias/29JDSSSBOA/TSTALIASID"
+                    "agentAliasArn": "arn:aws:bedrock:us-east-1:913036176028:agent-alias/29JDSSSBOA/TSTALIASID"
                 }
             },
             "inputs": [
@@ -293,7 +297,7 @@
                                     ]
                                 }
                             },
-                            "modelId": "arn:aws:bedrock:us-east-1:<account-id>:inference-profile/us.amazon.nova-premier-v1:0",
+                            "modelId": "arn:aws:bedrock:us-east-1:913036176028:inference-profile/us.amazon.nova-premier-v1:0",
                             "inferenceConfiguration": {
                                 "text": {
                                     "temperature": 0.699999988079071,

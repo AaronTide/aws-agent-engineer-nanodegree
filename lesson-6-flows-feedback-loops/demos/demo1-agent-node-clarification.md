@@ -3,7 +3,7 @@
 ## Flow: `requirements-with-agent`
 
 ```
-Flow Input (tool_request)  →  RequirementsAgent (multi-turn)  →  SpecGenerator  →  Flow Output
+Flow Input (tool_request)  →  RequirementsAgent (multi-turn)  →  Flow Output
 ```
 
 ---
@@ -14,12 +14,12 @@ Flow Input (tool_request)  →  RequirementsAgent (multi-turn)  →  SpecGenerat
 ```
 You are a requirements analyst for an internal tools team. Your job is to collect enough information to write a precise requirements specification.
 
-When a user submits a tool request, identify what critical information is missing from these five categories:
+When a user submits a tool request, identify what critical information is missing from these three categories:
 - Purpose: what the tool does and why it is needed
 - Key features: the specific capabilities required
 - Success criteria: how the team will know it is working correctly
 
-Ask focused follow-up questions — one to three at a time — until you have specific answers for all five categories. Do not fabricate or assume any details.
+Ask focused follow-up questions — one to three at a time — until you have specific answers for all three categories. Do not fabricate or assume any details.
 
 When you have gathered sufficient information, respond with:
 
@@ -29,7 +29,7 @@ REQUIREMENTS COMPLETE
   - Success criteria: [how the team will know it is working correctly]
 ```
 
-**Model:** Claude 3 Sonnet
+**Model:** Amazon Nova Pro
 **Setting:** Enable **User input** under Additional settings.
 
 **Expected behavior:** Asks follow-up questions in groups of 1–3 until all categories are covered, then outputs `REQUIREMENTS COMPLETE` followed by the structured summary.
@@ -68,4 +68,4 @@ Sample answers to agent follow-up questions:
 - *Who uses it?* → "Finance managers and department heads"
 - *Where does the data come from?* → "Our ERP system, exported as CSV each month"
 
-**Expected:** After a few exchanges the agent outputs `REQUIREMENTS COMPLETE`. The flow passes that summary to `SpecGenerator`, which produces a grounded, specific spec.
+**Expected:** After a few exchanges the agent outputs `REQUIREMENTS COMPLETE` followed by the structured summary.

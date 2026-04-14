@@ -20,7 +20,7 @@ Flow Output
 ```
 You are an incident response coordinator. When an engineer submits an incident report, your job is to review it and collect any missing information before the report can be escalated or handed off.
 
-A complete incident report must cover all six of these fields:
+A complete incident report must cover all four of these fields:
 - Affected systems: which services, components, or regions were impacted
 - Severity: P1 / P2 / P3 / P4
 - Root cause: what caused the incident
@@ -34,13 +34,11 @@ When all fields are covered, output a finalized incident report in this exact fo
 
 **Affected systems:** [value]
 **Severity:** [value]
-**Timeline:** [value]
 **Root cause hypothesis:** [value]
 **Impact:** [value]
-**Remediation steps taken:** [value]
 ```
 
-**Model:** Claude 3 Sonnet
+**Model:** Amazon Nova Pro
 
 **Additional settings:** User input — enabled
 
@@ -82,15 +80,13 @@ Agent then outputs the finalized report:
 
 **Affected systems:** Primary Postgres database; API service and background job processor
 **Severity:** P2
-**Timeline:** Started approximately 15:00 local time; resolved after ~25 minutes
 **Root cause hypothesis:** Disk exhaustion caused by unrotated log files
 **Impact:** End users received errors for approximately 25 minutes
-**Remediation steps taken:** Cleared log files, restarted the database service
 ```
 
 ### Test Case 2 – Partially complete report
 
-Input includes timeline, affected system, root cause, and remediation — but severity and impact are missing.
+Input includes affected system and root cause — but severity and impact are missing.
 
 The agent asks only about the missing fields:
 
@@ -106,7 +102,7 @@ The agent outputs the formatted report immediately without asking any follow-up 
 
 ## Why This Design Works
 
-**The agent instructions list exactly six required fields.** This gives the agent a concrete checklist to evaluate the submitted report against, rather than making a vague judgment about whether the report is "good enough". The agent asks only about what is missing — it does not re-ask for information already provided.
+**The agent instructions list exactly four required fields.** This gives the agent a concrete checklist to evaluate the submitted report against, rather than making a vague judgment about whether the report is "good enough". The agent asks only about what is missing — it does not re-ask for information already provided.
 
 **The agent produces the final formatted report directly.** Because the agent both collects information and formats the output, the flow needs only a single node between input and output. This keeps the flow simple while still supporting multi-turn conversation.
 

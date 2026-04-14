@@ -26,14 +26,14 @@ Flow Output
 2. Click **Create agent** and name it `IncidentReviewAgent`
 3. Under **Agent instructions**, write a prompt that instructs the agent to:
    - Review the submitted incident report for missing or vague information
-   - Identify gaps across these required fields: affected systems, severity, timeline, root cause hypothesis, impact, and remediation steps taken
+   - Identify gaps across these required fields: affected systems, severity, root cause hypothesis, and impact
    - Ask targeted follow-up questions — one to three at a time — until all fields are covered
    - Not fabricate or assume any details
    - When all fields are collected, output a finalized, structured incident report with clearly labeled fields
 
 > **TODO:** Write the agent instructions.
 
-4. Under **Model**, select **Claude 3 Sonnet**
+4. Under **Model**, select **Amazon Nova Pro**
 5. Under **Additional settings**, enable **User input**
 6. Click **Save and prepare** and wait for **Prepared** status
 
