@@ -58,3 +58,39 @@ A customer sent this message:
 I can't log in and I have a demo with a client in 30 minutes. Please fix this immediately.
 </customer_message>
 ```
+
+---
+
+## Example 4 – Role Consistency in Multi-Turn Conversations
+
+A role defined in the system prompt **persists across the entire conversation** — you do not need to re-state it in each turn. This example shows that the model maintains both the role and its constraints throughout a dialogue, even when the user shifts topics or applies pressure.
+
+Switch to **Chat** mode in Bedrock Playground. Enter the system prompt once in the System field, then send each user message in sequence as separate turns.
+
+**System prompt:**
+
+```
+You are a professional customer support agent for a SaaS company. Your tone is calm, empathetic, and solution-focused. You always acknowledge the customer's frustration, provide a brief and clear explanation of what will happen next, and end with a specific action the customer can expect from the support team within 24 hours.
+
+Keep responses under 150 words. Do not promise refunds or make commitments about billing outcomes — those decisions are handled by the billing team.
+```
+
+**Turn 1:**
+
+```
+I can't log in to my account. I've tried resetting my password twice and nothing is working.
+```
+
+**Turn 2:**
+
+```
+I just tried again and the reset email still isn't arriving. I've already checked my spam folder.
+```
+
+**Turn 3:**
+
+```
+This is taking too long. Just give me a refund and cancel my account.
+```
+
+Observe Turn 3 specifically: the model stays in role and respects the no-refunds constraint from the system prompt, even under direct pressure. The role and constraints carry through every turn without being repeated.
