@@ -3,7 +3,6 @@
 ## Setup
 
 - **Model:** Select **Amazon Nova Pro** from the model dropdown in Bedrock Playground.
-- **System prompt:** The system prompt field is not visible in the default Chat view. To access it, open the **Prompt Management** section in the Bedrock console — the field is labeled **"System instructions – Optional"**.
 
 ---
 
@@ -15,23 +14,23 @@ Your engineering team writes fast, messy implementation notes during feature dev
 
 ## Task 1 – Establish a Baseline (No Role)
 
-Before writing a role-based prompt, try writing a prompt without specifying a role. Run the task with the following notes:
+Before writing a role-based prompt, send the notes below to the model with no role instruction — just a plain request like "Turn these notes into documentation."
 
 ```
 <engineering_notes>
-auth flow changes - pushed to staging 3/10
+added caching for product listings - deployed tuesday
 
-old way: session token stored in cookie, validated on every req via middleware
-new way: JWT issued at login, includes user_id + role + exp timestamp. middleware now just verifies signature + checks exp, no db lookup on each req
+before: every request hit the db directly
+now: cache results in redis, expire after 5 min then refetch from db
 
-why: db was getting hammered on high-traffic endpoints, latency was bad. this cuts ~40% of auth-related db queries
+why: product page was slow during peak hours, db cpu kept spiking
 
-edge cases we handled:
-- token refresh: silent refresh at 5 min before exp using refresh token in httpOnly cookie
-- logout: we add token to blocklist in redis, TTL matches token exp
-- role changes: if admin revokes role mid-session, old token still valid until exp. known tradeoff, acceptable for now
+what we handle:
+- cache miss: falls through to db, result gets cached for next request
+- product updated: we clear the cache entry when a product is saved
+- sold-out items: might still show as available for up to 5 min. known tradeoff, acceptable for now
 
-not done yet: need to write migration guide for services still using old session middleware. also need to update the API gateway config to pass Authorization header correctly
+still to do: add metrics to track cache hit rate. also might need to tune the 5 min ttl depending on how often products change
 </engineering_notes>
 ```
 
@@ -41,19 +40,20 @@ Note the output's structure, tone, and completeness. You will compare against th
 
 ## Task 2 – Write an Initial Role-Based Prompt
 
-Set a system prompt in Bedrock Playground that:
+Write a prompt that:
 
 - Assigns the model a clear role as a technical documentation specialist
 - Specifies the audience as internal software engineers
 - Describes the expected output format (structured sections, clear language)
+- Includes the engineering notes from Task 1
 
-Test it with the sample notes from the previous task before refining.
+Run it and compare the output to your Task 1 baseline.
 
 ---
 
 ## Task 3 – Refine Your Prompt
 
-Based on what you observed, update the system prompt to address at least two of the following:
+Based on what you observed, update your prompt to address at least two of the following:
 
 - Output structure (headings, sections, bullet lists)
 - Level of detail (technical depth vs. plain language)
