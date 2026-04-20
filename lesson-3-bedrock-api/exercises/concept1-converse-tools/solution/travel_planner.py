@@ -137,7 +137,7 @@ def run_chat() -> None:
 
     print("Travel Planner")
     print("=" * 40)
-    print("Ask me to help plan your visit to London.\n")
+    print("Ask me to help plan your visit to a city.\n")
 
     try:
         user_input = input("You: ").strip()

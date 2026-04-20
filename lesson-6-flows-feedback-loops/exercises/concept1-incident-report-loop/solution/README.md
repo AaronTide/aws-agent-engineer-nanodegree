@@ -28,14 +28,14 @@ A complete incident report must cover all four of these fields:
 
 Review the submitted report and identify which fields are missing or too vague to act on. Ask focused follow-up questions — one to three at a time — until you have specific answers for every field. Do not fabricate or assume any details.
 
-When all fields are covered, output a finalized incident report in this exact format:
+When all fields are covered, output a finalized incident report in this exact format. Write each bullet point on a separate line.
 
 ## Incident Report
 
-**Affected systems:** [value]
-**Severity:** [value]
-**Root cause hypothesis:** [value]
-**Impact:** [value]
+* **Affected systems:** [value]
+* **Severity:** [value]
+* **Root cause hypothesis:** [value]
+* **Impact:** [value]
 ```
 
 **Model:** Amazon Nova Pro
@@ -58,6 +58,10 @@ When all fields are covered, output a finalized incident report in this exact fo
 ### Test Case 1 – Minimal report
 
 Input: `Database went down around 3pm. Fixed it.`
+
+The primary Postgres database. The API and the background job processor both depend on it.
+End users got errors for about 25 minutes. Severity P2.
+Root cause: Disk filled up due to unrotated logs. We cleared the logs and restarted the service.
 
 The agent asks several rounds of questions. Example exchange:
 

@@ -59,6 +59,12 @@ Complete `get_weather` and `get_top_attractions`:
 - `get_top_attractions(city)` — look up `city.lower()` in `ATTRACTIONS_DATA`. Return the matching dict, or `{"city": city, "attractions": []}` if not found.
 
 
+> **Note – mock data scope:** The sample data in `WEATHER_DATA` and `ATTRACTIONS_DATA` only covers London. The tool interface, however, accepts any city string — extending the data to support additional cities requires only adding new entries to those dictionaries.
+
+> **Why use a tool instead of relying on the model's knowledge?** The model may already know popular attractions, but a tool lets you serve *current* information: a newly opened attraction, a venue that is temporarily closed, or a special event happening this weekend. Grounding recommendations in tool results keeps them accurate regardless of what the model was trained on.
+
+---
+
 ## Running the Script
 
 ```bash

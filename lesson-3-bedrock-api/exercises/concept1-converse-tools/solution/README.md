@@ -78,6 +78,12 @@ def get_top_attractions(city: str) -> dict:
 
 ---
 
+> **Note – mock data scope:** `WEATHER_DATA` and `ATTRACTIONS_DATA` only contain entries for London. The tool schemas accept any city string, so supporting additional cities requires only adding new entries to those dictionaries — no changes to the tool interface or the Converse loop are needed.
+
+> **Why use a tool instead of relying on the model's knowledge?** The model may already know popular London attractions, but a tool lets you serve *current* information: a newly opened attraction, a venue that is temporarily closed, or a special event happening this weekend. Grounding recommendations in tool results keeps them accurate regardless of what the model was trained on.
+
+---
+
 ## Example Prompts
 
 Try these four prompts to exercise different combinations of weather and group type:

@@ -42,6 +42,8 @@ aws cloudformation deploy \
 
 Bedrock only allows one Lambda function per action group. Create three separate action groups, one for each Lambda.
 
+> **Warning – use underscores in function names:** When naming functions inside an action group, always use underscores (`_`), never hyphens (`-`). For example, use `get_cuisines`, not `get-cuisines`. Bedrock agents may fail to invoke a function whose name contains hyphens. Action group names (the container) can use hyphens, but the function names inside must not.
+
 ---
 
 ### Action Group 1: `get-cuisines`
