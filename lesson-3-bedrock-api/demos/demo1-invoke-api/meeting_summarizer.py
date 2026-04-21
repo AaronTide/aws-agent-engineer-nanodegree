@@ -2,13 +2,6 @@ import boto3
 import json
 
 # ---------------------------------------------------------------------------
-# Setup
-# ---------------------------------------------------------------------------
-bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
-
-MODEL_ID = "amazon.nova-lite-v1:0"
-
-# ---------------------------------------------------------------------------
 # Sample meeting notes
 # ---------------------------------------------------------------------------
 MEETING_NOTES = """\
@@ -28,7 +21,7 @@ Priya raised a concern: the empty-state illustration hasn't been reviewed yet.
 Sarah asked Priya to share it in Slack by Friday EOD for async feedback.
 
 Budget question came up: Jake mentioned the new search infrastructure will add
-roughly $200/month to the AWS bill. Sarah said she'd confirm with Finance
+roughly $2000/month to the AWS bill. Sarah said she'd confirm with Finance
 whether that fits Q3 budget before the next sprint.
 
 Wrap-up: next sync same time next week.
@@ -39,11 +32,18 @@ Wrap-up: next sync same time next week.
 # Basic InvokeModel call
 # ---------------------------------------------------------------------------
 def summarize_notes(notes: str) -> str:
+
+    bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
+    model_id = "amazon.nova-pro-v1:0"
+
     prompt = (
         "Summarize the following meeting notes into:\n"
         "1. Key decisions made\n"
         "2. Action items with owners\n\n"
-        f"Meeting notes:\n{notes}"
+        "Meeting notes:\n"
+        "<notes>\n"
+        f"{notes}\n"
+        "/<notes>\n"
     )
 
     body = {
@@ -52,7 +52,7 @@ def summarize_notes(notes: str) -> str:
     }
 
     response = bedrock.invoke_model(
-        modelId=MODEL_ID,
+        modelId=model_id,
         body=json.dumps(body),
         contentType="application/json",
         accept="application/json",
