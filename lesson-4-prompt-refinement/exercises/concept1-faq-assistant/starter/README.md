@@ -88,14 +88,21 @@ The script will call the assistant for each question and write results to `eval_
 
 ## Step 5 – Upload Results to S3
 
-Create a bucket (if you haven't already) and copy the output file:
+Deploy the provided CloudFormation template to create an S3 bucket with a unique name:
 
 ```bash
-aws s3 mb s3://<your-bucket-name>
-aws s3 cp eval_responses.jsonl s3://<your-bucket-name>/eval_responses.jsonl
+aws cloudformation deploy --template-file ../template.yaml --stack-name faq-assistant-eval
 ```
 
-Choose a globally unique bucket name, for example `novaplan-eval-<your-name>`.
+Then retrieve the bucket name and upload the results:
+
+```bash
+BUCKET=$(aws cloudformation describe-stacks --stack-name faq-assistant-eval \
+  --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" \
+  --output text)
+
+aws s3 cp eval_responses.jsonl s3://$BUCKET/eval_responses.jsonl
+```
 
 ---
 

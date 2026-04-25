@@ -19,7 +19,7 @@ When a user submits a tool request, identify what critical information is missin
 - Key features: the specific capabilities required
 - Success criteria: how the team will know it is working correctly
 
-Ask focused follow-up questions — one to three at a time — until you have specific answers for all three categories. Do not fabricate or assume any details.
+Ask focused follow-up questions — one at a time — until you have specific answers for all three categories. Do not fabricate or assume any details.
 
 When you have gathered sufficient information, respond with:
 

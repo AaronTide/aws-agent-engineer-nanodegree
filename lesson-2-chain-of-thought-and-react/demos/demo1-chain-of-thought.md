@@ -12,7 +12,7 @@ Refund Policy:
 4. Subscription type: Monthly plans are eligible for a full refund. Annual plans are eligible for a prorated refund only.
 5. Account type: Enterprise accounts are not eligible for self-service refunds and must be escalated to the account manager.
 
-Respond with one of: Approve – Full Refund / Approve – Prorated Refund / Deny / Escalate to Account Manager.
+Respond with one of: Approve – Full Refund / Deny.
 ```
 
 **Expected:** A single decision with no visible reasoning. May skip or overlook conditions that conflict with dominant signals in the request.
@@ -31,7 +31,7 @@ Refund Policy:
 4. Subscription type: Monthly plans are eligible for a full refund. Annual plans are eligible for a prorated refund only.
 5. Account type: Enterprise accounts are not eligible for self-service refunds and must be escalated to the account manager.
 
-For each condition, state whether it is met and why. Then give your final decision: Approve – Full Refund / Approve – Prorated Refund / Deny / Escalate to Account Manager.
+For each condition, state whether it is met and why. Then give your final decision: Approve – Full Refund / Deny.
 ```
 
 **Expected:** Explicit evaluation of each condition before the final decision, making any disqualifying factor visible.
@@ -68,17 +68,3 @@ Refund history: None
 Request: "We've been logging in every day but the tool just isn't a good fit for our workflow."
 ```
 
----
-
-**Request D** — correct answer: **Escalate to Account Manager**
-
-> Near-perfect eligibility on all other conditions. Enterprise account type overrides everything — no self-service refund is possible.
-
-```
-Customer: Priya K.
-Account type: Enterprise (annual plan)
-Purchase date: 8 days ago
-Feature quota used: 2%
-Refund history: None
-Request: "We're consolidating our vendor contracts and need to cancel."
-```
