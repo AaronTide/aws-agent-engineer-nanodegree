@@ -91,7 +91,10 @@ The script will call the assistant for each question and write results to `eval_
 Deploy the provided CloudFormation template to create an S3 bucket with a unique name:
 
 ```bash
-aws cloudformation deploy --template-file ../template.yaml --stack-name faq-assistant-eval
+aws cloudformation deploy \
+  --template-file template.yaml \
+  --stack-name faq-assistant-eval \
+  --region us-east-1
 ```
 
 Then retrieve the bucket name and upload the results:
@@ -99,6 +102,7 @@ Then retrieve the bucket name and upload the results:
 ```bash
 BUCKET=$(aws cloudformation describe-stacks --stack-name faq-assistant-eval \
   --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" \
+  --region us-east-1 \
   --output text)
 
 aws s3 cp eval_responses.jsonl s3://$BUCKET/eval_responses.jsonl
