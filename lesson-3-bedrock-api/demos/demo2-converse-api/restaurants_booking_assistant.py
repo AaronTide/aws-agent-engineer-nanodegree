@@ -9,7 +9,7 @@ bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 MODEL_ID = "amazon.nova-lite-v1:0"
 
 SYSTEM_PROMPT = """\
-You are a helpful travel planning assistant. Your job is to help the user find a restaurant to book for tonight.
+You are a helpful restaurant booking assistant. Your job is to help the user find a restaurant to book for tonight.
 
 Ask the user about their cuisine preference.
 Use the available tools to look up options and check availability before making a recommendation.
@@ -139,8 +139,8 @@ def execute_tool(name: str, tool_input: dict) -> dict:
 def run_chat() -> None:
     messages = []
 
-    print("Travel Assistant: Hi! I can help you find a restaurant for tonight.")
-    print("                  What cuisine are you in the mood for?\n")
+    print("Assistant: Hi! I can help you find a restaurant for tonight.")
+    print("           What cuisine are you in the mood for?\n")
 
     while True:
         try:

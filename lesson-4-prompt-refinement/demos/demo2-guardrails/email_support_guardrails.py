@@ -44,7 +44,7 @@ cancel and order from them instead?""",
 # ---------------------------------------------------------------------------
 # Run a single email through the model with or without the guardrail
 # ---------------------------------------------------------------------------
-def respond(email: str) -> tuple[str, bool]:
+def respond(email: str) -> str:
     kwargs = {
         "modelId": MODEL_ID,
         "system": [{"text": SYSTEM_PROMPT}],
@@ -61,6 +61,8 @@ def respond(email: str) -> tuple[str, bool]:
     response = bedrock.converse(**kwargs)
 
     blocked = response["stopReason"] == "guardrail_intervened"
+    if blocked:
+        print("\nREQUEST BLOCKED\n")
 
     text = ""
     for block in response["output"]["message"]["content"]:
@@ -68,7 +70,7 @@ def respond(email: str) -> tuple[str, bool]:
             text = block["text"]
             break
 
-    return text, blocked
+    return text
 
 
 # ---------------------------------------------------------------------------

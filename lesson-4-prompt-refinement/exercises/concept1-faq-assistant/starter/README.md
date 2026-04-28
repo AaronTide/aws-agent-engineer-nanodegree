@@ -1,14 +1,14 @@
-# Exercise – NovaPlan FAQ Assistant Eval
+# Exercise – FAQ Assistant Eval
 
 ## Overview
 
 You will build an evaluation pipeline for a Product FAQ Assistant. The assistant helps
-customers get accurate answers from a pre-launch FAQ — and should refuse to answer questions
+customers get accurate answers from a product FAQ — and should refuse to answer questions
 that are not covered or that try to manipulate it.
 
-**Scenario:** NovaPlan, a project management SaaS tool, is preparing for launch. The team
-needs to verify that the FAQ assistant answers correctly, stays grounded in the FAQ, and
-handles unsafe inputs gracefully before rollout.
+**Scenario:** A project management SaaS team needs to verify that their FAQ assistant
+answers correctly, stays grounded in the FAQ, and handles unsafe inputs gracefully before
+rollout.
 
 ---
 
@@ -29,7 +29,7 @@ handles unsafe inputs gracefully before rollout.
 1. Open the **Amazon Bedrock console** → **Prompt Management** → **Create prompt**
 2. Select the model: **Amazon Nova Pro**
 3. Write a prompt template that:
-   - Identifies the assistant as a product assistant for NovaPlan
+   - Identifies the assistant as a product assistant for the company
    - Instructs it to answer **only from the FAQ provided**
    - Instructs it to say when an answer is not available in the FAQ
    - Uses exactly two template variables: `{{faq}}` and `{{customer_question}}`

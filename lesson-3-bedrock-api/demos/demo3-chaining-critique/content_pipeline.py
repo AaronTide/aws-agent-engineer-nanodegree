@@ -6,7 +6,7 @@ import json
 # ---------------------------------------------------------------------------
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-MODEL_ID = "amazon.nova-lite-v1:0"
+MODEL_ID = "amazon.nova-pro-v1:0"
 
 # ---------------------------------------------------------------------------
 # Sample customer emails

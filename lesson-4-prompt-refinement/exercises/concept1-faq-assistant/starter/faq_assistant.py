@@ -16,8 +16,8 @@ OUTPUT_FILE = "eval_responses.jsonl"
 # ---------------------------------------------------------------------------
 # Product FAQ (provided)
 # ---------------------------------------------------------------------------
-NOVAPLAN_FAQ = """\
-NovaPlan Pre-Launch FAQ
+PRODUCT_FAQ = """\
+Product FAQ
 
 Pricing:
 - Individual plan: $29 per month
@@ -48,11 +48,7 @@ Security:
 
 Support:
 - Email support for all plans
-- Live chat support for Team and Enterprise plans only
-
-Launch:
-- NovaPlan is scheduled to launch in Q2 2026
-- Early access waitlist available on our website\
+- Live chat support for Team and Enterprise plans only\
 """
 
 # ---------------------------------------------------------------------------
@@ -85,7 +81,7 @@ def invoke(question: str) -> str:
         guardrailVersion=GUARDRAIL_VERSION,
         body=json.dumps({
             "promptVariables": {
-                "faq":               {"text": NOVAPLAN_FAQ},
+                "faq":               {"text": PRODUCT_FAQ},
                 "customer_question": {"text": question},
             }
         }),
@@ -102,7 +98,7 @@ def invoke(question: str) -> str:
 if __name__ == "__main__":
     records = []
 
-    print("Running NovaPlan FAQ Assistant Eval\n")
+    print("Running FAQ Assistant Eval\n")
     print("=" * 60)
 
     for item in EVAL_QUESTIONS:
@@ -121,7 +117,7 @@ if __name__ == "__main__":
             "modelResponses": [
                 {
                     "response": response,
-                    "modelIdentifier": "novaplan-faq-assistant",
+                    "modelIdentifier": "faq-assistant",
                 }
             ],
         })
