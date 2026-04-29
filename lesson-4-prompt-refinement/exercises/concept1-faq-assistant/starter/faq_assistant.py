@@ -8,8 +8,6 @@ bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 # TODO: Fill in after completing the console steps in the README.
 PROMPT_VERSION_ARN = "<YOUR_PROMPT_VERSION_ARN>"
-GUARDRAIL_ID       = "<YOUR_GUARDRAIL_ID>"
-GUARDRAIL_VERSION  = "1"
 
 OUTPUT_FILE = "eval_responses.jsonl"
 
@@ -61,7 +59,6 @@ Support:
 # Include at least:
 #   - 4 answerable questions (clear answers exist in the FAQ above)
 #   - 2 unanswerable questions (not covered by the FAQ)
-#   - 1 unsafe input (a prompt injection or manipulation attempt)
 # ---------------------------------------------------------------------------
 EVAL_QUESTIONS = [
     # {
@@ -72,13 +69,11 @@ EVAL_QUESTIONS = [
 
 
 # ---------------------------------------------------------------------------
-# Invoke the stored prompt template with guardrail
+# Invoke the stored prompt template
 # ---------------------------------------------------------------------------
 def invoke(question: str) -> str:
     response = bedrock.invoke_model(
         modelId=PROMPT_VERSION_ARN,
-        guardrailIdentifier=GUARDRAIL_ID,
-        guardrailVersion=GUARDRAIL_VERSION,
         body=json.dumps({
             "promptVariables": {
                 "faq":               {"text": PRODUCT_FAQ},

@@ -15,12 +15,11 @@ rollout.
 ## What You'll Do
 
 1. Define the assistant's prompt as a Bedrock Prompt Management template
-2. Create a guardrail to handle unsafe or manipulative inputs
-3. Fill in an eval dataset (question → expected answer) in the script
-4. Run the evaluation script and review the results
-5. Upload the results to S3
-6. Run a Bedrock Model Evaluation job to score the responses
-7. Iterate on the prompt and re-run to see if results improve
+2. Fill in an eval dataset (question → expected answer) in the script
+3. Run the evaluation script and review the results
+4. Upload the results to S3
+5. Run a Bedrock Model Evaluation job to score the responses
+6. Iterate on the prompt and re-run to see if results improve
 
 ---
 
@@ -38,23 +37,12 @@ rollout.
 
 ---
 
-## Step 2 – Create a Guardrail in the Bedrock Console
+## Step 2 – Fill In the Eval Dataset
 
-1. Open **Amazon Bedrock console** → **Guardrails** → **Create guardrail**
-2. Add a **Denied Topic** that blocks requests trying to get unauthorized discounts or free subscriptions
-3. Enable the **Prompt attacks** content filter at **High** strength
-4. Save the guardrail
-5. Copy the **Guardrail ID** and note the version (default: `1`)
-
----
-
-## Step 3 – Fill In the Eval Dataset
-
-Open `faq_assistant.py` and fill in `EVAL_QUESTIONS`. Add at least 7 entries covering:
+Open `faq_assistant.py` and fill in `EVAL_QUESTIONS`. Add at least 6 entries covering:
 
 - **Answerable questions** – questions with clear answers in the FAQ
 - **Unanswerable questions** – questions not covered by the FAQ
-- **An unsafe input** – a prompt injection or manipulation attempt
 
 Each entry uses this format:
 
@@ -67,13 +55,12 @@ Each entry uses this format:
 
 ---
 
-## Step 4 – Configure and Run the Script
+## Step 3 – Configure and Run the Script
 
-Fill in these constants at the top of `faq_assistant.py`:
+Fill in this constant at the top of `faq_assistant.py`:
 
 ```python
 PROMPT_VERSION_ARN = "<paste your prompt version ARN>"
-GUARDRAIL_ID       = "<paste your guardrail ID>"
 ```
 
 Then run:
@@ -86,7 +73,7 @@ The script will call the assistant for each question and write results to `eval_
 
 ---
 
-## Step 5 – Upload Results to S3
+## Step 4 – Upload Results to S3
 
 Deploy the provided CloudFormation template to create an S3 bucket with a unique name:
 
@@ -110,11 +97,11 @@ aws s3 cp eval_responses.jsonl s3://$BUCKET/eval_responses.jsonl
 
 ---
 
-## Step 6 – Run a Bedrock Model Evaluation Job
+## Step 5 – Run a Bedrock Model Evaluation Job
 
 1. Open **Amazon Bedrock console** → **Evaluations** → **Create** → **Automatic: LLM as a judge**
 2. Select **Amazon Nova Pro** as an evaluator model
-3. In **Inference source** select **Bring your own inference responses**. Set **Source name** to `novaplan-faq-assistant`
+3. In **Inference source** select **Bring your own inference responses**. Set **Source name** to `faq-assistant`
 4. In **Metrics** select **Correctness**, unselect all other metrics
 5. In **Datasets**  → **Prompt dataset**, point to the file you uploaded:
 
@@ -128,11 +115,11 @@ aws s3 cp eval_responses.jsonl s3://$BUCKET/eval_responses.jsonl
 8. Click **Create** button at the bottom of the page
 
 
-Once the job completes, review the scores — questions with clear FAQ answers should score well; the prompt injection case will score near zero because the guardrail blocked the response
+Once the job completes, review the scores — questions with clear FAQ answers should score well; unanswerable questions will score lower if the model guesses instead of saying the answer is not available.
 
 ---
 
-## Step 7 – Iterate on the Prompt
+## Step 6 – Iterate on the Prompt
 
 Review the responses printed to the terminal. For any question where the model's answer doesn't match your `referenceResponse`, look for a pattern — is the model guessing when it should say the answer isn't available? Is it too verbose? Does it answer outside the FAQ?
 
