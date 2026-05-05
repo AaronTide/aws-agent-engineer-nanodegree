@@ -85,7 +85,7 @@ if __name__ == "__main__":
         print(case["email"].strip())
         print()
 
-        text_without, _ = respond(case["email"])
+        text_without = respond(case["email"])
         print("--- Response ---")
         print(text_without)
         print()
