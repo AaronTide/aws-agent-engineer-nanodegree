@@ -83,4 +83,38 @@ Request: "We've been logging in every day but the tool just isn't a good fit for
 
 ## Response to scenario 2
 
+Let's evaluate James T.'s refund request based on the provided refund policy step by step:
+
+1. **Purchase window**:
+   - **Condition**: The purchase must be within the last 30 days.
+   - **Customer's purchase date**: 22 days ago.
+   - **Evaluation**: This condition is met because James's purchase was within the last 30 days.
+
+2. **Usage threshold**:
+   - **Condition**: The customer must have used less than 20% of their feature quota.
+   - **Customer's feature quota used**: 14%.
+   - **Evaluation**: This condition is met because James has used less than 20% of his feature quota.
+
+3. **Refund history**:
+   - **Condition**: The customer must not have received a refund in the past 12 months.
+   - **Customer's refund history**: None.
+   - **Evaluation**: This condition is met because James has not received a refund in the past 12 months.
+
+4. **Subscription type**:
+   - **Condition**: Monthly plans are eligible for a full refund.
+   - **Customer's subscription type**: Monthly plan.
+   - **Evaluation**: This condition is met because James has a monthly subscription plan, which is eligible for a full refund.
+
+5. **Account type**:
+   - **Condition**: Enterprise accounts are not eligible for self-service refunds and must be escalated to the account manager.
+   - **Customer's account type**: Standard.
+   - **Evaluation**: This condition is met because James has a Standard account, which is eligible for self-service refunds.
+
+**Final Decision**:
+- James T.'s request meets all the conditions of the refund policy.
+
+**Conclusion**: Approve – Full Refund
+
+James's refund request is approved for a full refund because he meets all the criteria specified in the refund policy.
+
 
