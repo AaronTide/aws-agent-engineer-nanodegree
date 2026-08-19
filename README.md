@@ -1,6 +1,12 @@
 # Purpose of This Repo
 
-This repo is meant to be used to keep things organized during content development and act as the source of truth for all projects and exercises related to this course.
+This repo is meant to act as the source of truth for all projects and exercises related to the AWS Agent Engineer Nanodegree course provided by Amazon Web Services (AWS) and Udacity.
+
+It contains starter templates as well my own solutions for all the excercises and projects in this course.
+
+Each lesson was conducted by Udacity and the projects/demos/excercises were developed on the AWS Console.
+
+The course was started on 4th of August 2026.
 
 ## Folder Structure
 
@@ -24,9 +30,6 @@ Example
 lesson-1-hello
 ```
 
-Four lesson folders have been provided as a template; However, you may need to add more or possibly use less than four depending on what is needed.
-
-If you require an additional lesson folder, you can make a copy of the folder and paste it into the root directory.
 
 ### Exercises Folder
 
