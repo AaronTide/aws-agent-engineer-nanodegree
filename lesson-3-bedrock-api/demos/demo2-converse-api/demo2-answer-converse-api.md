@@ -51,24 +51,42 @@ Assistant: Hi! I can help you find a restaurant for tonight.
            What cuisine are you in the mood for?
 
 You: Italian food is my all-time fave 
+
   [tool call] get_cuisines({})
+  
   [tool result] {'cuisines': ['American', 'French', 'Indian', 'Italian', 'Japanese', 'Mexican']}
+  
   [tool call] search_restaurants({'cuisines': ['Italian']})
+  
+  
   [tool result] {'restaurants': [{'id': 'r1', 'name': 'Pasta Roma', 'cuisine': 'Italian', 'rating': 4.5}, {'id': 'r7', 'name': 'Trattoria Bella', 'cuisine': 'Italian', 'rating': 4.4}]}
+  
+  
   [tool call] get_availability({'restaurant_id': 'r1'})
+  
   [tool result] {'restaurant_id': 'r1', 'available': True}
+  
   [tool call] get_availability({'restaurant_id': 'r7'})
+  
   [tool result] {'restaurant_id': 'r7', 'available': True}
 
-Travel Assistant: <thinking>Both Pasta Roma and Trattoria Bella have availability for tonight. I will recommend Pasta Roma as it has a slightly higher rating.</thinking>
+Travel Assistant: 
+ < .thinking >
+ Both Pasta Roma and Trattoria Bella have availability for tonight. I will recommend Pasta Roma as it has a slightly higher rating.</thinking 
+ 
 
 I recommend booking at Pasta Roma, an Italian restaurant, for tonight. It has a 4.5 rating and is available for your preferred time. Enjoy your meal!
 
 You: I've already been there, give me some other restaurant
-  [tool call] get_availability({'restaurant_id': 'r7'})
-  [tool result] {'restaurant_id': 'r7', 'available': True}
 
-Travel Assistant: <thinking>Trattoria Bella also has availability for tonight. I will recommend it as an alternative to Pasta Roma.</thinking>
+  [tool call] get_availability({'restaurant_id': 'r7'})
+  
+  [tool result] {'restaurant_id': 'r7', 'available': True}
+  
+
+Travel Assistant: <.thinking>
+Trattoria Bella also has availability for tonight. I will recommend it as an alternative to Pasta Roma.</thinking>
+
 
 Since you've already been to Pasta Roma, I recommend booking at Trattoria Bella, another Italian restaurant, for tonight. It has a 4.4 rating and is available for your preferred time. Enjoy your meal!
 
