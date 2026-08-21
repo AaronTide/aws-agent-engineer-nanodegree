@@ -4,7 +4,7 @@
   (Provide the credentials as required)
 
   Then run:
-  aws configure set aws_session_token
+  aws configure set aws_session_token "your token"
 
     cd demo-1-invoke-api
 
