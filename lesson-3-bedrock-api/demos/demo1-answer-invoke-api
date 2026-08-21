@@ -1,0 +1,44 @@
+# Run
+  aws configure
+
+  (Provide the credentials as required)
+
+  Then run:
+  aws configure set aws_session_token
+
+    cd demo-1-invoke-api
+
+    python meeting_summarizer.py
+
+    Answer:
+
+=== InvokeModel ===
+
+### Key Decisions Made:
+1. The fuzzy-match feature for the search will be cut from v1 and moved to the backlog. Only the exact-match feature will be shipped to meet the release date.
+2. The empty-state illustration needs to be reviewed before proceeding.
+
+### Action Items with Owners:
+1. **Share Empty-State Illustration**: Priya to share the empty-state illustration in Slack by Friday EOD for async feedback.
+2. **Confirm Budget with Finance**: Sarah to confirm with Finance whether the additional $2000/month for the new search infrastructure fits within the Q3 budget before the next sprint.
+
+
+  
+  
+    python meeting_summarizer_stream.py
+
+  
+=== InvokeModelWithResponseStream ===
+
+### Key Decisions Made:
+1. The fuzzy-match feature for the search will be cut from v1 and moved to the backlog. Only the exact-match feature will be shipped to meet the release date.
+2. The empty-state illustration needs to be reviewed before proceeding.
+
+### Action Items with Owners:
+1. **Share empty-state illustration in Slack by Friday EOD** - **Priya (Design)**
+2. **Confirm additional $2000/month AWS cost with Finance to ensure it fits Q3 budget** - **Sarah (PM)**
+
+### Next Steps:
+- Next sync meeting scheduled for the same time next week.
+
+    
