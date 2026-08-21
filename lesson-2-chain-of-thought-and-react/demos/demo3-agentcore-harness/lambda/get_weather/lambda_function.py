@@ -24,28 +24,26 @@ MOCK_WEATHER = {
 
 
 def lambda_handler(event, context):
-    parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
-    city = parameters.get("city", "").lower()
-    date = parameters.get("date", "")
+    # AgentCore Gateway calls this Lambda with the tool arguments AS the event:
+    #   event == {"city": "London", "date": "2026-08-22"}
+    # The name of the tool being called is delivered via the Lambda context:
+    #   context.client_context.custom["bedrockAgentCoreToolName"]
+    # (This replaces the old Bedrock Agents action-group event format, which
+    # wrapped parameters in a list and required a messageVersion envelope.)
+    tool_name = ""
+    if context.client_context and getattr(context.client_context, "custom", None):
+        tool_name = context.client_context.custom.get("bedrockAgentCoreToolName", "")
+    print(f"Tool invoked: {tool_name} | arguments: {json.dumps(event)}")
+
+    city = str(event.get("city", "")).lower()
+    date = str(event.get("date", ""))
 
     if city not in MOCK_WEATHER:
         result = {"error": f"Unknown city: '{city.title()}'. Supported cities are: London, Paris, New York."}
     else:
-        result = MOCK_WEATHER[city]
+        result = dict(MOCK_WEATHER[city])
         result["city"] = city.title()
         result["date"] = date
 
-    return {
-        "messageVersion": "1.0",
-        "response": {
-            "actionGroup": event["actionGroup"],
-            "function": event["function"],
-            "functionResponse": {
-                "responseBody": {
-                    "TEXT": {
-                        "body": json.dumps(result)
-                    }
-                }
-            },
-        },
-    }
+    # Return the result directly -- the Gateway wraps it as the MCP tool result.
+    return result

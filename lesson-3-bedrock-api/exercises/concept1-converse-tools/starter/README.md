@@ -12,7 +12,7 @@ In this exercise you'll use the Amazon Bedrock Converse API to build a travel pl
 
 A Python script (`travel_planner.py`) that:
 
-1. Sends the user's question to Claude via the Bedrock Converse API
+1. Sends the user's question to the model (Amazon Nova) via the Bedrock Converse API
 2. Defines and exposes two tool schemas: `get_weather` and `get_top_attractions`
 3. Executes each tool locally when the model invokes it
 4. Passes tool results back to the model

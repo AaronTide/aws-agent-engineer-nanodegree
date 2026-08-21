@@ -10,10 +10,13 @@ Flow Input (user_message)
     │
     ▼
 [RouteByOperation]
-    ├── operation == "summarize"  →  [Summarizer]      →  Flow Output
-    ├── operation == "rewrite"    →  [Rewriter]        →  Flow Output
-    └── else                      →  [OtherResponder]  →  Flow Output
+    ├── operation == "summarize"  →  [Summarizer]      →  SummarizerOutput
+    ├── operation == "rewrite"    →  [Rewriter]        →  RewriterOutput
+    └── else                      →  [OtherResponder]  →  OtherOutput
 ```
+
+Each branch ends in its own Flow output node — a Flow output node accepts exactly one
+incoming connection, so a single shared output node fails at **Prepare**.
 
 ---
 
@@ -140,9 +143,9 @@ User message:
 | Flow input | Summarizer | `user_message` → `user_message` |
 | Flow input | Rewriter | `user_message` → `user_message` |
 | Flow input | OtherResponder | `user_message` → `user_message` |
-| Summarizer (model output) | Flow output | response → output |
-| Rewriter (model output) | Flow output | response → output |
-| OtherResponder (model output) | Flow output | response → output |
+| Summarizer (model output) | SummarizerOutput | response → output |
+| Rewriter (model output) | RewriterOutput | response → output |
+| OtherResponder (model output) | OtherOutput | response → output |
 
 ---
 

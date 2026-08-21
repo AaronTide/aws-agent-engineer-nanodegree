@@ -3,3 +3,7 @@
 lesson-4-prompt-refinement/demos/demo3-evals/eval_responses.jsonl
 demo_guides/*
 scripts/*
+__pycache__/
+*.pyc
+demo_config.json
+agentcore_config.json

@@ -4,10 +4,15 @@
 
 ```
 Flow Input (ticket)  →  ClassifyTicket  →  RouteByCategory
-                                               ├── "billing"   →  BillingResponder  →  Flow Output
-                                               ├── "technical" →  TechResponder     →  Flow Output
-                                               └── else        →  OtherResponder    →  Flow Output
+                                               ├── "billing"   →  BillingResponder  →  BillingOutput
+                                               ├── "technical" →  TechResponder     →  TechOutput
+                                               └── else        →  OtherResponder    →  OtherOutput
 ```
+
+> **Note:** Each branch ends in its **own** Flow output node (`BillingOutput`, `TechOutput`,
+> `OtherOutput`). A Flow output node accepts exactly one incoming connection, so wiring all
+> three responders into a single output node fails when you prepare the flow. Only the branch
+> the condition selects runs, so each invocation still produces exactly one output.
 
 ---
 

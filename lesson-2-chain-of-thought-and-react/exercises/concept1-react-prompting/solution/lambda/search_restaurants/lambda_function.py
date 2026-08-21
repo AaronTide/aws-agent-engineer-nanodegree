@@ -1,6 +1,5 @@
 import json
 
-
 RESTAURANTS = [
     {"id": "r1", "name": "Trattoria Bella", "cuisine": "Italian",  "rating": 4.6},
     {"id": "r2", "name": "Osteria Romana",  "cuisine": "Italian",  "rating": 4.4},
@@ -13,30 +12,32 @@ RESTAURANTS = [
 ]
 
 
+def tool_name(context):
+    """The AgentCore Gateway sends the name of the tool being called
+    (namespaced as "<targetName>___<toolName>") in the Lambda client context.
+    """
+    cc = getattr(context, "client_context", None)
+    custom = getattr(cc, "custom", None) or {}
+    return custom.get("bedrockAgentCoreToolName", "")
+
+
 def lambda_handler(event, context):
-    parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
-    cuisine = parameters.get("cuisine", "").lower()
+    # The AgentCore Gateway invokes this Lambda with the TOOL ARGUMENTS as the
+    # event itself — a plain dict such as {"cuisine": "Italian"}. This is NOT
+    # the old Bedrock Agents action-group envelope.
+    print(f"tool={tool_name(context)} event={json.dumps(event)}")  # CloudWatch Logs
+
+    cuisine = str((event or {}).get("cuisine") or "").strip().lower()
 
     if cuisine:
-        restaurants = [r for r in RESTAURANTS if r["cuisine"].lower() == cuisine]
-        if not restaurants:
+        matches = [r for r in RESTAURANTS if r["cuisine"].lower() == cuisine]
+        if not matches:
             result = {"error": f"No {cuisine.title()} restaurants found."}
         else:
-            result = {"restaurants": restaurants}
+            result = {"restaurants": matches}
     else:
         result = {"restaurants": RESTAURANTS}
 
-    return {
-        "messageVersion": "1.0",
-        "response": {
-            "actionGroup": event["actionGroup"],
-            "function": event["function"],
-            "functionResponse": {
-                "responseBody": {
-                    "TEXT": {
-                        "body": json.dumps(result)
-                    }
-                }
-            },
-        },
-    }
+    # Whatever this function returns is serialized back to the agent as the
+    # tool result — no response envelope needed.
+    return result

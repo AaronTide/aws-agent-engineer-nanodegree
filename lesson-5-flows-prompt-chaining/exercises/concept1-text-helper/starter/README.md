@@ -16,10 +16,15 @@ Flow Input (user_message)
     │
     ▼
 [Condition: RouteByOperation]
-    ├── operation == "summarize"  →  [Node 2A: Summarizer]      →  Flow Output
-    ├── operation == "rewrite"    →  [Node 2B: Rewriter]        →  Flow Output
-    └── else                      →  [Node 2C: OtherResponder]  →  Flow Output
+    ├── operation == "summarize"  →  [Node 2A: Summarizer]      →  SummarizerOutput
+    ├── operation == "rewrite"    →  [Node 2B: Rewriter]        →  RewriterOutput
+    └── else                      →  [Node 2C: OtherResponder]  →  OtherOutput
 ```
+
+> **Note:** Each branch ends in its **own** Flow output node. A Flow output node accepts
+> exactly one incoming connection, so wiring all three responders into a single output node
+> makes **Prepare** fail. Only the branch the condition selects actually runs, so each
+> invocation still produces exactly one output.
 
 ---
 
@@ -115,6 +120,10 @@ Input variable: `user_message` (String)
 
 ## Task 8 – Wire the Connections
 
+Add two more **Flow output** nodes so the flow has three in total — one per branch
+(name them `SummarizerOutput`, `RewriterOutput`, and `OtherOutput`). A Flow output node
+accepts only one incoming connection.
+
 Connect the nodes as follows:
 
 | From | To | What to map |
@@ -124,9 +133,9 @@ Connect the nodes as follows:
 | Flow input | Summarizer | `user_message` → `user_message` |
 | Flow input | Rewriter | `user_message` → `user_message` |
 | Flow input | OtherResponder | `user_message` → `user_message` |
-| Summarizer (output) | Flow output | model response → output |
-| Rewriter (output) | Flow output | model response → output |
-| OtherResponder (output) | Flow output | model response → output |
+| Summarizer (output) | SummarizerOutput | model response → output |
+| Rewriter (output) | RewriterOutput | model response → output |
+| OtherResponder (output) | OtherOutput | model response → output |
 
 ---
 
