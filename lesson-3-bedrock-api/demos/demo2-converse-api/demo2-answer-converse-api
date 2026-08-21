@@ -1,0 +1,8 @@
+Configure the AWS CLI auth first
+
+  aws configure
+ -> provide the authentications
+
+  cd demo2-converse-api
+
+  
