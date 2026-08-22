@@ -1,127 +1,118 @@
-# Exercise – Incident Report Completion with an Agent Node
+# Exercise – Incident Report Feedback Loop
 
 ## Overview
 
-An operations engineer submits an incomplete incident report after a production issue. Your task is to build a Bedrock Flow that reviews the report, identifies what operational details are missing, asks targeted follow-up questions, and generates a finalized report once all required information has been collected.
+An SRE submits a terse incident report after a production issue — often just one line. Your task is to build a feedback loop that reviews the report, asks targeted follow-up questions about what is missing, and produces a finalized report only once every required detail has been collected.
+
+You will build this on the Amazon Bedrock AgentCore managed harness. The harness is stateful by default: reusing the same `runtimeSessionId` continues the conversation. That means the entire feedback loop is just **a system prompt + a session** — no agent node, no "User input" toggle, no prepare step.
+
+The prompt is the whole exercise. The infrastructure is one script.
 
 ---
 
 ## What You Will Build
 
 ```
-Flow Input (incident_report)
-    │
-    ▼
-[Agent: IncidentReviewAgent]  ←→  asks follow-up questions (multi-turn)
-    │  (when agent has collected all missing details, outputs a formatted report)
-    ▼
-Flow Output
+Engineer (chat.py) ── invoke_harness ──▶  AgentCore managed harness
+        ▲                                   "incident_report_agent"
+        │                                    (Amazon Nova Pro)
+        └────────── streamed reply ───────────────┘
+
+          same runtimeSessionId every turn  =  one continuous conversation
 ```
 
----
+A complete incident report must cover **all five** of these required fields:
 
-## Task 1 – Create the Bedrock Agent
-
-1. Open the [Amazon Bedrock console](https://console.aws.amazon.com/bedrock) and navigate to **Agents**
-2. Click **Create agent** and name it `IncidentReviewAgent`
-3. Under **Agent instructions**, write a prompt that instructs the agent to:
-   - Review the submitted incident report for missing or vague information
-   - Identify gaps across these required fields: affected systems, severity, root cause hypothesis, and impact
-   - Ask targeted follow-up questions — one to three at a time — until all fields are covered
-   - Not fabricate or assume any details
-   - When all fields are collected, output a finalized, structured incident report with clearly labeled fields
-
-> **TODO:** Write the agent instructions.
-
-4. Under **Model**, select **Amazon Nova Pro**
-5. Under **Additional settings**, enable **User input**
-6. Click **Save and prepare** and wait for **Prepared** status
+- **Severity** — P1 / P2 / P3 / P4
+- **Affected service** — which service, component, or region was impacted
+- **Impact** — who or what was affected, and to what extent
+- **Root cause** — what caused the incident (a labeled hypothesis is fine)
+- **Timeline** — when it started, was detected, and was resolved
 
 ---
 
-## Task 2 – Test the Agent in the Console Chat
+## Setup
 
-Before wiring the agent into a flow, verify that it behaves correctly using the built-in test chat.
+This folder gives you three scripts:
 
-1. On the agent detail page, click **Test** to open the chat panel
-2. Click **Prepare** if prompted, then start a new session
+| File | What it does |
+|------|--------------|
+| `setup.py` | Creates the IAM execution role and the harness. **Contains the `SYSTEM_PROMPT` you must write.** |
+| `chat.py` | Provided multi-turn chat client — generates one session id and reuses it every turn (it also hides the `<thinking>…</thinking>` reasoning spans Amazon Nova streams before its replies) |
+| `cleanup.py` | Deletes the harness and role when you are done |
 
-### Test 1 – Minimal report
+You need AWS credentials configured for `us-east-1` and `boto3` installed.
 
-```
-Database went down around 3pm. Fixed it.
-```
+---
 
-Confirm the agent asks focused follow-up questions rather than accepting the report as complete.
+## Steps
 
-### Test 2 – Partially complete report
+### Step 1 – Write the system prompt
 
-```
-Incident: API gateway returning 503 errors
-Started at 14:32 UTC, resolved 15:18 UTC
-Affected: checkout service in us-east-1
-Root cause: misconfigured load balancer after deploy at 14:28 UTC
-Action taken: rolled back the deployment
+Open `setup.py` and replace the `TODO` in `SYSTEM_PROMPT` with instructions that make the model:
+
+1. Act as an **incident report coordinator for an SRE team** (role + goal)
+2. Check every submission against the **five required fields** listed above (checklist)
+3. Ask **exactly one** focused follow-up question per turn about a missing field — never several at once, never about a field it already has (one-question-at-a-time strategy)
+4. **Never fabricate** or assume details, and **never produce the final report while any field is missing**
+5. Once all five fields are covered, output a structured report that starts with the line `FINAL REPORT` (completion format)
+
+### Step 2 – Create the harness
+
+```bash
+python setup.py
 ```
 
-Confirm the agent asks only about what is genuinely missing (severity, impact) and not about fields already provided.
+Wait for `READY` (~2–3 minutes). The script saves the harness ARN to `harness_arn.txt` for the chat client. (The script also disables the harness's long-term memory, so every new session starts clean — conversation state lives only in the session id.)
 
-### Test 3 – Already complete report
+### Step 3 – Chat
 
-```
-Severity: P1
-Affected systems: checkout-api (us-east-1), payment-processor integration
-Timeline: Started 14:32 UTC, detected 14:35 UTC, resolved 15:18 UTC
-Root cause: Load balancer misconfiguration introduced in deploy v2.4.1 at 14:28 UTC
-Impact: ~1,200 failed checkout attempts, estimated $34k in lost transactions
-Remediation: Rolled back to v2.4.0, confirmed 503 rate dropped to zero at 15:18 UTC
+```bash
+python chat.py
 ```
 
-Confirm the agent outputs a formatted final report without asking any follow-up questions.
+`chat.py` generates one `runtimeSessionId` at startup and sends it with every `invoke_harness` call — that single reused id is what turns separate API calls into one conversation.
 
 ---
 
-## Task 3 – Create the Flow
+## Test
 
-1. Navigate to **Flows** and click **Create flow**
-2. Name it `incident-report-completion` and click **Create**
+### Test 1 – Terse report (the main event)
 
----
+Start a chat and submit this exact report:
 
-## Task 4 – Configure the Flow Input
+```
+API latency spiked at 14:00 UTC
+```
 
-The flow takes a single input:
-- `incident_report` (String) — the raw, potentially incomplete report submitted by the engineer
+Answer each follow-up question naturally (make up plausible details). Verify that the harness:
 
-Configure the **Flow input** node to expose this single field.
+- asks **one** question per turn, not a bundle
+- works through the missing fields without re-asking what you already told it
+- never emits `FINAL REPORT` until all five fields have answers
+- emits a structured `FINAL REPORT` once they do
 
----
+### Test 2 – Complete report on turn one
 
-## Task 5 – Add the Agent Node
-
-1. Click **+** → **Agent**, name it `IncidentReviewAgent`
-2. Select the `IncidentReviewAgent` you created and its alias
-3. Set the input to `incident_report` (String)
-
----
-
-## Task 6 – Connect the Nodes
-
-| From | To | What to map |
-|------|----|-------------|
-| Flow input | IncidentReviewAgent | `incident_report` → agent input |
-| IncidentReviewAgent (output) | Flow output | agent response → output |
+Start a **new** chat session (rerun `chat.py`) and paste a report that already covers all five fields — severity, affected service, impact, root cause, timeline. Verify the harness outputs `FINAL REPORT` immediately, with no follow-up questions.
 
 ---
 
-## Task 7 – Prepare and Test
+## Cleanup
 
-Click **Prepare**, wait for **Prepared** status, then test the flow end-to-end with the inputs from Task 2.
+```bash
+python cleanup.py
+```
+
+Deletes the harness, the IAM role, and `harness_arn.txt`.
 
 ---
 
-## Deliverable
+## Hints
 
-- Screenshots of the completed flow and the agent node configuration
-- The agent instructions you wrote for `IncidentReviewAgent`
-- An example conversation showing the agent collecting missing details before producing a final report
+- Make the five fields an explicit bulleted checklist in the prompt — a named list turns "is this report good enough?" into a field-by-field check the model can actually perform.
+- Spell out the per-turn procedure ("On every turn: 1. compare … 2. ask exactly ONE question … 3. never produce the report while …"). Models follow numbered procedures far more reliably than adjectives like "thorough".
+- Give the completion output an exact format anchored on the literal line `FINAL REPORT`. That marker is both the model's permission to stop asking and your test's success signal.
+- If the model bundles several questions into one turn, tighten the wording: "exactly ONE question" and "Never ask more than one question per turn" are stronger than "one at a time".
+- If it produces a report with invented values, add an explicit prohibition: "Do not fabricate or assume any details."
+- If it keeps asking the engineer to confirm or refine details they already gave (especially in Test 2), add: "Treat a field as covered as soon as the engineer has given a concrete answer for it — do not ask them to confirm, refine, or quantify it further."

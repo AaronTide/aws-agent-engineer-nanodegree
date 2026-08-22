@@ -1,113 +1,165 @@
-# Exercise Solution – Incident Report Completion with an Agent Node
+# Exercise Solution – Incident Report Feedback Loop
 
-## Flow Structure
+## Overview
+
+The feedback loop is two pieces:
 
 ```
-Flow Input (incident_report)
-    │
-    ▼
-[Agent: IncidentReviewAgent]  ←→  asks follow-up questions (multi-turn)
-    │  (when agent has collected all missing details, outputs a formatted report)
-    ▼
-Flow Output
+Engineer (chat.py) ── invoke_harness ──▶  AgentCore managed harness
+        ▲                                   "incident_report_agent"
+        │                                    (Amazon Nova Pro)
+        └────────── streamed reply ───────────────┘
+
+          same runtimeSessionId every turn  =  one continuous conversation
 ```
+
+1. **The prompt** — role + goal, a five-field checklist, a one-question-at-a-time procedure, and an exact completion format
+2. **The session** — `chat.py` generates one `runtimeSessionId` (≥ 33 characters) and reuses it on every `invoke_harness` call; the harness keeps the conversation state server-side. (`chat.py` also filters out the `<thinking>…</thinking>` reasoning spans Amazon Nova streams before its replies.)
+
+There is no agent node, no "User input" toggle, and no prepare step — the harness is stateful by default.
 
 ---
 
-## Bedrock Agent: IncidentReviewAgent
+## The System Prompt
 
-**Agent instructions:**
+This is the full instruction prompt from `setup.py`:
+
 ```
-You are an incident response coordinator. When an engineer submits an incident report, your job is to review it and collect any missing information before the report can be escalated or handed off.
+You are an incident report coordinator for an SRE team. An engineer will
+submit an incident report that may be incomplete. Your job is to collect
+every required detail before the report can be filed.
 
-A complete incident report must cover all four of these fields:
-- Affected systems: which services, components, or regions were impacted
+A report can only be filed when you have specific answers for all five of
+these required fields:
 - Severity: P1 / P2 / P3 / P4
-- Root cause: what caused the incident
-- Impact: who or what was affected and to what extent
+- Affected service: which service, component, or region was impacted
+- Impact: who or what was affected, and to what extent
+- Root cause: what caused the incident (a hypothesis is acceptable if
+  labeled as such)
+- Timeline: when the incident started, when it was detected, and when it
+  was resolved
 
-Review the submitted report and identify which fields are missing or too vague to act on. Ask focused follow-up questions — one to three at a time — until you have specific answers for every field. Do not fabricate or assume any details.
+On every turn:
+1. Compare everything the engineer has told you so far against the five
+   required fields. Any concrete answer the engineer has given counts as
+   covered — including a labeled hypothesis for the root cause. Never ask
+   the engineer to confirm, refine, or quantify something they have
+   already told you.
+2. If a field has not been addressed at all, or is too vague to write a
+   sentence about, ask about the single most important missing field —
+   phrased as ONE single, short question. Never ask two questions in a
+   turn, not even two phrasings of the same question, and never re-ask
+   about a field you already have an answer for.
+3. Do not fabricate or assume any details. The report may only contain
+   details the engineer actually gave — never add specifics they did not
+   mention. Do not produce the final report while any field is still
+   missing.
+4. If all five fields are covered — even in the engineer's very first
+   message — do not ask anything; immediately output the report.
 
-When all fields are covered, output a finalized incident report in this exact format. Write each bullet point on a separate line.
+Only when you have specific answers for all five fields, output the report
+in exactly this format — plain text, no XML tags or wrappers — and nothing
+else:
 
-## Incident Report
-
-* **Affected systems:** [value]
-* **Severity:** [value]
-* **Root cause hypothesis:** [value]
-* **Impact:** [value]
+FINAL REPORT
+- Severity: [value]
+- Affected service: [value]
+- Impact: [value]
+- Root cause: [value]
+- Timeline: [value]
 ```
-
-**Model:** Amazon Nova Pro
-
-**Additional settings:** User input — enabled
 
 ---
 
-## Connection Map
+## Setup
 
-| From | To | Mapping |
-|------|----|---------|
-| Flow input | IncidentReviewAgent | `incident_report` → agent input |
-| IncidentReviewAgent (output) | Flow output | agent response → output |
+From this folder, with AWS credentials configured for `us-east-1`:
+
+```bash
+python setup.py
+```
+
+The script:
+
+1. Creates an IAM execution role trusted by `bedrock-agentcore.amazonaws.com`
+2. Creates the harness with `create_harness`, pinning the model to **Amazon Nova Pro** (`us.amazon.nova-pro-v1:0`, temperature 0), passing the instruction prompt as `systemPrompt`, and disabling the harness's long-term memory (`memory={"disabled": {}}`) so every new session starts clean — conversation state lives only in the `runtimeSessionId`
+3. Polls `get_harness` until the status is `READY` (~2–3 minutes)
+4. Writes `harness_arn.txt`, which `chat.py` reads
+
+Then chat with:
+
+```bash
+python chat.py
+```
 
 ---
 
-## Expected Outputs
+## Verification
 
-### Test Case 1 – Minimal report
-
-Input: `Database went down around 3pm. Fixed it.`
-
-The primary Postgres database. The API and the background job processor both depend on it.
-End users got errors for about 25 minutes. Severity P2.
-Root cause: Disk filled up due to unrotated logs. We cleared the logs and restarted the service.
-
-The agent asks several rounds of questions. Example exchange:
-
-> **Agent:** Which database was affected, and which services or teams depend on it?
->
-> **User:** The primary Postgres database. The API and the background job processor both depend on it.
->
-> **Agent:** How severe was the impact — were end users affected, or was this limited to internal systems? And approximately how long was the outage?
->
-> **User:** End users got errors for about 25 minutes. Severity P2.
->
-> **Agent:** What caused the outage, and what steps were taken to restore the database?
->
-> **User:** Disk filled up due to unrotated logs. We cleared the logs and restarted the service.
-
-Agent then outputs the finalized report:
+### Test 1 – Terse report → one question at a time
 
 ```
-## Incident Report
-
-**Affected systems:** Primary Postgres database; API service and background job processor
-**Severity:** P2
-**Root cause hypothesis:** Disk exhaustion caused by unrotated log files
-**Impact:** End users received errors for approximately 25 minutes
+You: API latency spiked at 14:00 UTC
+Agent: Please provide the severity of the incident: P1 / P2 / P3 / P4
+You: P2.
+Agent: Which service, component, or region was impacted by the incident?
+You: The checkout API in us-east-1.
+Agent: Who or what was affected by the incident, and to what extent?
+You: About 15% of checkout requests timed out for roughly 40 minutes.
+Agent: What caused the incident? If the exact cause is not yet confirmed,
+       please provide a hypothesis.
+You: A bad database index deployed at 13:55 UTC; a hypothesis until we confirm.
+Agent: Please provide the timeline of the incident: when it started, when
+       it was detected, and when it was resolved.
+You: Detected 14:05 UTC by alerts, resolved 14:40 UTC after rolling back.
+Agent: FINAL REPORT
+       - Severity: P2
+       - Affected service: checkout API in us-east-1
+       - Impact: About 15% of checkout requests timed out for roughly 40 minutes.
+       - Root cause: A bad database index deployed at 13:55 UTC; a hypothesis
+         until we confirm.
+       - Timeline: Incident started at 14:00 UTC, detected at 14:05 UTC by
+         alerts, resolved at 14:40 UTC after rolling back.
 ```
 
-### Test Case 2 – Partially complete report
+(The model works through the checklist in order — severity first — and pulls
+the 14:00 UTC start time for the timeline from the very first message.)
 
-Input includes affected system and root cause — but severity and impact are missing.
+Check each behavior:
 
-The agent asks only about the missing fields:
+- **One question per turn** — never a bundle of questions
+- **No re-asking** — each question targets a field you have not covered yet
+- **No premature report** — `FINAL REPORT` never appears while a field is missing
+- **Completion** — once the fifth field is answered, the very next reply is the structured `FINAL REPORT`
 
-> **Agent:** What severity level would you assign to this incident? And approximately how many users or transactions were affected during the outage window?
+### Test 2 – Complete report on turn one → immediate final report
 
-After receiving answers, it outputs the finalized formatted report.
+Start a **new** session (rerun `chat.py`) and paste:
 
-### Test Case 3 – Already complete report
+```
+Severity P1. The payments service in us-east-1 went down. All card transactions failed for 22 minutes, roughly 4,800 customers affected. Root cause: expired TLS certificate on the payment gateway. Started 09:14 UTC, detected 09:16 UTC by synthetic monitoring, resolved 09:36 UTC after rotating the cert.
+```
 
-The agent outputs the formatted report immediately without asking any follow-up questions.
+Expected: the harness outputs `FINAL REPORT` immediately, with every field filled from the submission and **zero** follow-up questions.
+
+---
+
+## Cleanup
+
+```bash
+python cleanup.py
+```
+
+Deletes the harness, the IAM execution role, and `harness_arn.txt`.
 
 ---
 
 ## Why This Design Works
 
-**The agent instructions list exactly four required fields.** This gives the agent a concrete checklist to evaluate the submitted report against, rather than making a vague judgment about whether the report is "good enough". The agent asks only about what is missing — it does not re-ask for information already provided.
+**The checklist names exactly five fields.** "Review the report" is a judgment call; "compare against these five named fields" is a mechanical check. The model asks only about what is genuinely missing because the prompt tells it what "complete" means.
 
-**The agent produces the final formatted report directly.** Because the agent both collects information and formats the output, the flow needs only a single node between input and output. This keeps the flow simple while still supporting multi-turn conversation.
+**One question per turn is stated as a procedure, not a preference.** The numbered per-turn algorithm ("compare → ask exactly ONE → never produce the report while a field is missing") is followed far more reliably than a soft instruction like "ask follow-up questions as needed".
 
-**User input is enabled on the agent.** Without this setting, the agent cannot pause mid-execution to ask the user a question. It is required for any agent that needs multi-turn conversation.
+**The completion marker doubles as a gate.** `FINAL REPORT` may only be emitted when all five fields are covered, so the same literal string is simultaneously the model's stop condition and an easy thing for a human (or a test) to check for.
+
+**The session replaces the infrastructure.** On Bedrock Agents Classic this behavior required an agent with User input enabled wrapped in a Flow. The harness keeps conversation state per `runtimeSessionId`, so multi-turn clarification needs no extra components at all — the feedback loop is prompt + session.

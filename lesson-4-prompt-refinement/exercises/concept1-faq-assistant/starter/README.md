@@ -110,7 +110,7 @@ aws s3 cp eval_responses.jsonl s3://$BUCKET/eval_responses.jsonl
    ```
 
 
-6. Set an S3 output location to any folder in the same S3 bucket, e.g. `s3://udacity-agentic-engineer-c1-eval/lesson-4/results/`
+6. Set an S3 output location to any folder in the same S3 bucket, e.g. `s3://<your-bucket-name>/lesson-4/results/`
 7. Under **Amazon Bedrock IAM role - Permissions** select **Create and use a new service role**
 8. Click **Create** button at the bottom of the page
 
@@ -138,7 +138,7 @@ Repeat until the responses consistently match what you expect.
 ## Expected Output
 
 ```
-Running NovaPlan FAQ Assistant Eval
+Running FAQ Assistant Eval
 ============================================================
 Question:  What is the price of the team plan?
 Expected:  The team plan is $99 per month for up to 10 users.

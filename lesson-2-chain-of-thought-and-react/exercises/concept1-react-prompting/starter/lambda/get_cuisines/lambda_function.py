@@ -1,6 +1,5 @@
 import json
 
-
 RESTAURANTS = [
     {"id": "r1", "name": "Trattoria Bella", "cuisine": "Italian",  "rating": 4.6},
     {"id": "r2", "name": "Osteria Romana",  "cuisine": "Italian",  "rating": 4.4},
@@ -13,21 +12,23 @@ RESTAURANTS = [
 ]
 
 
-def lambda_handler(event, context):
-    cuisines = sorted(set(r["cuisine"] for r in RESTAURANTS))
-    result = {"cuisines": cuisines}
+def tool_name(context):
+    """The AgentCore Gateway sends the name of the tool being called
+    (namespaced as "<targetName>___<toolName>") in the Lambda client context.
+    """
+    cc = getattr(context, "client_context", None)
+    custom = getattr(cc, "custom", None) or {}
+    return custom.get("bedrockAgentCoreToolName", "")
 
-    return {
-        "messageVersion": "1.0",
-        "response": {
-            "actionGroup": event["actionGroup"],
-            "function": event["function"],
-            "functionResponse": {
-                "responseBody": {
-                    "TEXT": {
-                        "body": json.dumps(result)
-                    }
-                }
-            },
-        },
-    }
+
+def lambda_handler(event, context):
+    # The AgentCore Gateway invokes this Lambda with the TOOL ARGUMENTS as the
+    # event itself — a plain dict ({} for this no-argument tool). This is NOT
+    # the old Bedrock Agents action-group envelope.
+    print(f"tool={tool_name(context)} event={json.dumps(event)}")  # CloudWatch Logs
+
+    cuisines = sorted({r["cuisine"] for r in RESTAURANTS})
+
+    # Whatever this function returns is serialized back to the agent as the
+    # tool result — no response envelope needed.
+    return {"cuisines": cuisines}
