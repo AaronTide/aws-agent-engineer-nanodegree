@@ -1,3 +1,5 @@
+# Setup
+
 Configure the AWS CLI auth first
 
     aws configure
@@ -10,7 +12,7 @@ Configure the AWS CLI auth first
     cd demo2-converse-api
 
 
-## Simple Travel Chat
+# Simple Travel Chat
 
     python simple_travel_chat.py
 
@@ -53,7 +55,97 @@ Ready to dive into the paradise of Hawaii? 🌺🏝️
 
 
 
-## Restaurant Booking Assistant
+# Restaurant Booking Assistant
+
+
+## Prompt (Todo-1):
+
+You are a restaurant recommendation agent for a user who is located in Paris. You have the following tools:
+
+a) get_cuisines 
+
+Returns the list of cuisine types available. Takes no parameters. 
+
+b) search_restaurants
+
+Searches for restaurants based on the parameter cuisine. Returns all restaurants if no cuisine is specified
+
+c) get_availability
+
+Checks whether a specific restaurant has availability for tonight. Takes a parameter restaurant_id 
+
+Always use the tools before making suggestions to the user. Do NOT invent restaurants/ratings/availability results or add them from memory. You must only rely on the tool results. 
+Always confirm availability before recommending the restaurant and try the next best option if the restaurant is not available.
+
+## Tool Wiring:
+
+    TOOL_TARGETS = [
+    {
+        "target_name": "cuisines",
+        "lambda_output_key": "GetCuisinesFunctionArn",
+        "tools": [
+            {
+                "name": "get_cuisines",
+                "description": "Returns the list of cuisine types available",  # TODO (see README table)
+                "inputSchema": {"type": "object",
+                "properties": {
+
+
+                }},
+            }
+        ],
+    },
+    {
+        "target_name": "restaurants",
+        "lambda_output_key": "SearchRestaurantsFunctionArn",
+        "tools": [
+            {
+                "name": "search_restaurants",
+                "description": "Searches for restaurants based on the type of cuisine served",  # TODO (see README table)
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "cuisine": {
+            "type": "string",
+            "description": "The type of cuisine to search for, such as Italian, Mexican, or Japanese. If not specified, all restaurants are returned."
+    }
+                        # TODO: add the optional "cuisine" string parameter
+                        # with a good description (see README table).
+                    },
+                },
+            }
+        ],
+    },
+    {
+        "target_name": "availability",
+        "lambda_output_key": "GetAvailabilityFunctionArn",
+        "tools": [
+            {
+                "name": "get_availability",
+                "description": "checks if a specific restaurant is available now",  # TODO (see README table)
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+
+
+                        "restaurant_id": {
+                        "type": "string",
+                        "description": "The unique ID of the restaurant to check availability for."
+                    }
+                        # TODO: add the required "restaurant_id" string
+                        # parameter (see README table)...
+                    },
+                    "required": ["restaurant_id"]
+                    # TODO: ...and mark it required:
+                    # "required": ["restaurant_id"],
+                },
+            }
+        ],
+    },
+]
+
+
+## Chat responses with trace:
 
      python restaurant_booking_assistant
 
