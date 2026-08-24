@@ -1,22 +1,32 @@
 Configure the AWS CLI auth first
 
-  aws configure
- -> provide the authentications
-  aws configure set aws_session_token "your token"
+    aws configure
+    
+ -> provide the authentications then:
+    
+    aws configure set aws_session_token "your token"
 
 
-  cd demo2-converse-api
+    cd demo2-converse-api
+
 
 ## Simple Travel Chat
 
-python simple_travel_chat.py
+    python simple_travel_chat.py
 
 
-Travel Assistant: Hello! I can help you plan your next trip. Where are you thinking of going?
+**Travel Assistant**: 
+Hello! I can help you plan your next trip. Where are you thinking of going?
 
-You: hawaii plss
 
-Travel Assistant: Absolutely, Hawaii is a dream destination! Here’s a quick guide to help you explore:
+
+**You**:
+hawaii plss
+
+
+
+**Travel Assistant**: 
+Absolutely, Hawaii is a dream destination! Here’s a quick guide to help you explore:
 
 **Best Time to Visit:**
 - April to June or September to November for pleasant weather and fewer crowds.
@@ -42,15 +52,18 @@ Travel Assistant: Absolutely, Hawaii is a dream destination! Here’s a quick gu
 Ready to dive into the paradise of Hawaii? 🌺🏝️
 
 
+
 ## Restaurant Booking Assistant
 
- python restaurant_booking_assistant
+     python restaurant_booking_assistant
 
 
-Assistant: Hi! I can help you find a restaurant for tonight.
+**Assistant**: Hi! I can help you find a restaurant for tonight.
            What cuisine are you in the mood for?
 
-You: Italian food is my all-time fave 
+**You**: Italian food is my all-time fave 
+
+
 
   [tool call] get_cuisines({})
   
@@ -70,21 +83,25 @@ You: Italian food is my all-time fave
   
   [tool result] {'restaurant_id': 'r7', 'available': True}
 
-Travel Assistant: 
+**Travel Assistant**: 
  < .thinking >
  Both Pasta Roma and Trattoria Bella have availability for tonight. I will recommend Pasta Roma as it has a slightly higher rating.</thinking 
  
 
 I recommend booking at Pasta Roma, an Italian restaurant, for tonight. It has a 4.5 rating and is available for your preferred time. Enjoy your meal!
 
-You: I've already been there, give me some other restaurant
+
+
+**You**: I've already been there, give me some other restaurant
+
+
 
   [tool call] get_availability({'restaurant_id': 'r7'})
   
   [tool result] {'restaurant_id': 'r7', 'available': True}
   
 
-Travel Assistant: <.thinking>
+**Travel Assistant**: <.thinking>
 Trattoria Bella also has availability for tonight. I will recommend it as an alternative to Pasta Roma.</thinking>
 
 
