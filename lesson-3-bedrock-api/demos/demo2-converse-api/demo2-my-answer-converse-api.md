@@ -57,8 +57,9 @@ Ready to dive into the paradise of Hawaii? 🌺🏝️
 
 # Restaurant Booking Assistant
 
+Add the following in restaurants_booking_assistant.py
 
-## Prompt (Todo-1):
+## Prompt:
 
 You are a restaurant recommendation agent for a user who is located in Paris. You have the following tools:
 
@@ -142,7 +143,7 @@ Always confirm availability before recommending the restaurant and try the next 
             }
         ],
     },
-]
+    ]
 
 
 ## Chat responses with trace:
