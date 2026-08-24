@@ -1,8 +1,15 @@
 
 ## Setup 
+
 (First configure a new guardrail on AWS Console)
 
- Then, run:    
+Add the following code at the beginning of email_support_guardrails.py:
+
+    GUARDRAIL_ID = ”the_guardrail_id”
+   
+    GUARDRAIL_VERSION=1
+
+ Then, run in terminal:    
  
      aws configure
      aws configure set aws_session_token 
