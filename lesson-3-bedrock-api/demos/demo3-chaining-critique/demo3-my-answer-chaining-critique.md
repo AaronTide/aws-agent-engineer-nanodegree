@@ -1,4 +1,4 @@
-# Answer:
+# My Answer:
 
 ## Setup:
 
@@ -40,7 +40,7 @@ Score: 7/10
 Quality threshold met. Done.
 
 
-##Try -2 ( Changed Score threshold =8, Max Attempts = 3)
+## Try -2 ( Changed Score threshold =8, Max Attempts = 3)
   
        python email_refiner.py
 
