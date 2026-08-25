@@ -41,11 +41,27 @@ We will set up a new evaluation on AWS console with automatic LLM-as-a-judge, bu
          python generate_responses.py
    
 
-7) Set up a new evaluation on aws bedrock console with the s3 bucket name. Inference source is shopfast_email_agent
+7) Set up a new evaluation on aws bedrock console 
+   
+   a) Inference source is shopfast_email_agent
 
-    Should take a few minutes to get the evaluations.
+   b) Evaluation dataset is s3://{S3_BUCKET}/{S3_KEY}
 
-    
+   ##Bucket and Key name are from your generate_responses.py file
+
+   c) Evaluation results can stored on the same bucket on a new file
+
+   d) Save it. It should take a few minutes to get the evaluations.
+
+    <img width="1364" height="604" alt="Screenshot (414)" src="https://github.com/user-attachments/assets/85433f03-0b78-4448-9fca-f53f5ad668f8" />
+
  ## My Results:  
  
-<img width="1366" height="768" alt="Screenshot (415)" src="https://github.com/user-attachments/assets/02cd45b7-5113-4313-aec0-6e4963b30a85" />
+<img width="1366" height="768" alt="Screenshot (415)" src="https://github.com/user-attachments/assets/9fe78f15-99d4-44aa-b474-c8c6d9b35555" />
+
+<img width="1366" height="768" alt="Screenshot (416)" src="https://github.com/user-attachments/assets/0136deda-6d99-4007-8431-aff0dad4daff" />
+
+<img width="1366" height="768" alt="Screenshot (417)" src="https://github.com/user-attachments/assets/838b2f9e-15ff-47f2-8ed2-11ff3ae76e7c" />
+
+
+
