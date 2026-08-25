@@ -1,4 +1,4 @@
-# FAQ Assistant (My Solution)
+# FAQ Assistant (My Solution With Setup)
 
 
 ## Step -1: My Prompt in the Bedrock Console 
@@ -153,7 +153,15 @@ aws s3 cp eval_responses.jsonl s3://$BUCKET/eval_responses.jsonl
 6. Set an S3 output location to any folder in the same S3 bucket, e.g. `s3://<your-bucket-name>/lesson-4/results/`
 
 
+
 ## My Evaluation Results:
+
+
+<img width="1366" height="768" alt="Screenshot (419)" src="https://github.com/user-attachments/assets/dc4dc951-89be-4402-a89a-6a3ef0e349a8" />
+
+
+
+<img width="1366" height="768" alt="Screenshot (418)" src="https://github.com/user-attachments/assets/0f62bc14-fd0a-4fd1-85b9-b266519cccf9" />
 
 
 
