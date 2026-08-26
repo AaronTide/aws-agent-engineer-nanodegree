@@ -59,3 +59,43 @@ Keep the report concise and to-the-point. Use formal language with simple Englis
 ````
 
 
+## Verification Test:
+
+
+Here, the Agent uses the One-Question-Per-Turn procedure to check my provided answers against the checklist. 
+
+For a more diverse testing point, while answering one question, I've added the answer of another question to see if the Agent would take note of it.
+
+Eg: Here, I provided the affected service as well as the severity in 1 turn.
+
+```
+You: It was P2, it happened in the login API in central hub.
+````
+
+The Agent took note of it and did not ask me about the affected service again.
+
+Also, once it received all the required information, it generated the Incident Report.
+
+## Full Conversation With The Agent:
+
+```
+You: API latency spiked at 14:00 UTC
+Agent: Please provide the severity of the incident: P1 / P2 / P3 / P4
+You: It was P2, it happened in the login API in central hub.
+Agent: Who or what was affected by the incident, and to what extent?
+You:  Clients could not login or signup for about an hour.
+Agent: What caused the incident? If the exact cause is not yet confirmed,
+       please provide a hypothesis.
+You: There was probably a problem with the database for auth, scheduled maintenance was overdue.
+Agent: Please provide the timeline of the incident: when it started, when
+       it was detected, and when it was resolved.
+You: Started around 14:00 UTC, detected at 14:10 UTC and resolved in about 15:00..
+Agent: FINAL REPORT
+       - Severity: P2
+       - Affected service: Login API service in the Central Hub
+       - Impact: Clients could not access the login or signup services for about 1 hour.
+       - Root cause: Overdue maintenance of the database for authentication; a hypothesis
+         until we confirm.
+       - Timeline: Incident started at 14:00 UTC, detected at 14:10 UTC and resolved at around 15:00 UTC.
+```
+
