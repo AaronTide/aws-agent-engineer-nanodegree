@@ -76,6 +76,10 @@ Agent: REQUIREMENTS COMPLETE
 
 ```
 
+To cleanup the IAM session and the agent harnesss, run
+
+    python cleanup_demo.py
+   
   
 
       
